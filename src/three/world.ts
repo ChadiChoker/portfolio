@@ -92,9 +92,12 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
     const texW = Math.min(maxTex, 4096, Math.max(2048, Math.round(view.width * dpr / 256) * 256));
     rt = new THREE.WebGLRenderTarget(texW, Math.round(texW * 1328 / 2048), {
       colorSpace: THREE.SRGBColorSpace, samples: mobile ? 0 : 4,
-      generateMipmaps: true,
-      minFilter: mobile ? THREE.LinearMipmapLinearFilter : THREE.LinearMipmapNearestFilter, // desktop: no blend with the blurrier level
-      anisotropy: renderer.capabilities.getMaxAnisotropy(),
+      // Desktop: sample the full-resolution texture directly (mipmaps would drop to a half-res level
+      // whenever the display is drawn smaller than the texture, which reads as soft text).
+      // Phones: the display is tiny, so trilinear mipmaps + anisotropy stop text from shimmering.
+      generateMipmaps: mobile,
+      minFilter: mobile ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter,
+      anisotropy: mobile ? renderer.capabilities.getMaxAnisotropy() : 1,
     });
     hudTex = new THREE.CanvasTexture(drawScreenHud(rt.width, rt.height, mobile));
     hudTex.colorSpace = THREE.SRGBColorSpace;
