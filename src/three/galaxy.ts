@@ -45,7 +45,8 @@ export type Galaxy = {
   readonly pulsing: boolean;
 };
 
-export function createGalaxy(count: number, rand: () => number = Math.random): Galaxy {
+export function createGalaxy(count: number): Galaxy {
+  const rand = Math.random;
   const pos = new Float32Array(count * 3);
   const radius = new Float32Array(count);
   const col = new Float32Array(count * 3);

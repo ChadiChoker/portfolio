@@ -10,7 +10,7 @@ export const projects: Project[] = [
     architecture: ["Webhook trigger in n8n", "Groq Llama 3.3 70B for classification + enrichment with structured JSON prompts", "Validation + routing nodes", "Structured output delivered to a webhook destination"],
     stack: ["n8n", "Groq", "Llama 3.3 70B", "Prompt engineering", "JSON schemas"],
     highlights: ["Deterministic structured outputs from an LLM", "Documented prompts and architecture write-up", "Importable, reproducible workflow"],
-    repoUrl: gh("arcvault-pipeline"), tags: ["ai", "llm", "automation", "n8n"], featured: true,
+    repoUrl: gh("arcvault-pipeline"), tags: ["ai", "llm", "automation", "n8n"],
   },
   {
     slug: "vehicle-ai", title: "Vehicle AI Inspection", tagline: "Upload car photos, get AI-detected damage reports.",
@@ -19,7 +19,7 @@ export const projects: Project[] = [
     architecture: ["Node.js REST API with photo uploads", "AI damage-detection step returning structured findings", "Swagger docs, Docker image and CI pipeline with automated tests", "React + TypeScript (Vite) frontend on Vercel"],
     stack: ["Node.js", "Express", "React", "TypeScript", "Docker", "Swagger", "CI"],
     highlights: ["End-to-end AI feature from upload to report", "Tested, containerized, CI-built backend", "Live frontend demo"],
-    repoUrl: gh("vehicle-ai-backend"), liveUrl: "https://vehicle-ai-frontend.vercel.app", tags: ["ai", "computer-vision", "fullstack"], featured: true,
+    repoUrl: gh("vehicle-ai-backend"), liveUrl: "https://vehicle-ai-frontend.vercel.app", tags: ["ai", "computer-vision", "fullstack"],
   },
   {
     slug: "sadie", title: "SADIE: AI Call Activity Platform", tagline: "Webhook receiver + dashboard for AI phone-call events.",
@@ -28,7 +28,7 @@ export const projects: Project[] = [
     architecture: ["Spring Boot 3 webhook receiver (Java 17)", "PostgreSQL 15 with Flyway migrations and Spring Data JPA", "React 18 + TypeScript + Vite dashboard with React Router"],
     stack: ["Java", "Spring Boot", "PostgreSQL", "Flyway", "React", "TypeScript"],
     highlights: ["Idempotent webhook ingestion", "Versioned schema migrations", "Typed dashboard over a REST API"],
-    repoUrl: gh("sadie-webhook-backend"), tags: ["ai", "backend", "dashboard"], featured: true,
+    repoUrl: gh("sadie-webhook-backend"), tags: ["ai", "backend", "dashboard"],
   },
   {
     slug: "liu-meet", title: "LIU Meet", tagline: "Group video calling built on WebRTC.",
@@ -37,7 +37,7 @@ export const projects: Project[] = [
     architecture: ["Laravel backend + MySQL", "WebSocket signaling server", "React client with WebRTC peer connections", "Nginx deployment"],
     stack: ["Laravel", "PHP", "React", "WebRTC", "WebSockets", "MySQL"],
     highlights: ["Real-time multi-peer media", "Custom signaling layer"],
-    repoUrl: gh("liu-meet"), tags: ["realtime", "webrtc", "fullstack"], featured: true,
+    repoUrl: gh("liu-meet"), tags: ["realtime", "webrtc", "fullstack"],
   },
   {
     slug: "classifieds-api", title: "Classifieds API", tagline: "OLX-style ads API with dynamic per-category fields.",
@@ -46,6 +46,6 @@ export const projects: Project[] = [
     architecture: ["Laravel REST API", "Category-defined dynamic field schemas + validation", "MySQL/PostgreSQL", "Docker Compose setup"],
     stack: ["Laravel", "PHP", "MySQL", "PostgreSQL", "Docker"],
     highlights: ["Flexible schema without migrations per category", "Dockerized dev environment"],
-    repoUrl: gh("hassanzeaiter"), tags: ["backend", "api"], featured: true,
+    repoUrl: gh("hassanzeaiter"), tags: ["backend", "api"],
   },
 ];

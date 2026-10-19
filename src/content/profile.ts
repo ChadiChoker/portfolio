@@ -13,5 +13,4 @@ export const profile: Profile = {
   linkedin: "https://www.linkedin.com/in/chadi-choker-592371295",
   github: "https://github.com/ChadiChoker",
   cv: "/Chadi_Choker_CV.pdf",
-  languages: ["Arabic", "English", "French"],
 };

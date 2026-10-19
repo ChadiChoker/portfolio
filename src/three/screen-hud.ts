@@ -5,7 +5,7 @@ const APPLE = "M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4
 const SANS = '-apple-system, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif';
 const MONO = 'ui-monospace, "SF Mono", Menlo, monospace';
 
-export function drawScreenHud(width: number, height: number, now = new Date()): HTMLCanvasElement {
+export function drawScreenHud(width: number, height: number): HTMLCanvasElement {
   const c = document.createElement("canvas");
   c.width = width; c.height = height;
   const g = c.getContext("2d")!;
@@ -21,7 +21,7 @@ export function drawScreenHud(width: number, height: number, now = new Date()): 
   let x = 62 * u + g.measureText(profile.name).width + 26 * u;
   g.font = `400 ${15 * u}px ${SANS}`;
   for (const item of ["Services", "Projects", "Experience", "Contact"]) { g.fillText(item, x, bar / 2); x += g.measureText(item).width + 22 * u; }
-  const clock = now.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).replace(/,/g, "");
+  const clock = new Date().toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).replace(/,/g, "");
   g.textAlign = "right"; g.fillText(clock, width - 26 * u, bar / 2);
   g.font = `600 ${13 * u}px ${MONO}`; g.fillStyle = "#10b981"; g.fillText("● agent online", width - 26 * u - g.measureText(clock).width - 90 * u, bar / 2);
   g.textAlign = "left";

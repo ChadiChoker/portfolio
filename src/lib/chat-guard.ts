@@ -4,7 +4,7 @@ export const MAX_CHARS = 500;
 export type GuardMessage = { role: string; parts?: { type: string; text?: string }[] };
 export type GuardResult = { ok: true } | { ok: false; status: 400 | 429; error: string };
 
-export const messageText = (m: Pick<GuardMessage, "parts">) =>
+const messageText = (m: Pick<GuardMessage, "parts">) =>
   (m.parts ?? []).filter((p) => p.type === "text").map((p) => p.text ?? "").join("");
 
 export function validateChat(messages: GuardMessage[]): GuardResult {
