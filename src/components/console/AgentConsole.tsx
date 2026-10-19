@@ -21,6 +21,7 @@ export function AgentConsole({ initialQuestion }: { initialQuestion?: string }) 
 
   function answerOffline(q: string, addUser = true) {
     const r = scriptedAnswer(q);
+    if (r.tool) dispatchEvent(new Event("agent-tool"));
     setOfflineMsgs((m) => [
       ...m,
       ...(addUser ? [{ id: crypto.randomUUID(), role: "user" as const, text: q }] : []),
@@ -40,6 +41,12 @@ export function AgentConsole({ initialQuestion }: { initialQuestion?: string }) 
   const userCount = messages.filter((m) => m.role === "user").length + offlineMsgs.filter((m) => m.role === "user").length;
   const limitReached = userCount >= MAX_USER_MESSAGES;
   const busy = status === "submitted" || status === "streaming";
+
+  // Every new tool call sends a shockwave through the galaxy behind the page.
+  const toolCalls = messages.reduce((n, m) => n + m.parts.filter((p) => p.type.startsWith("tool-")).length, 0);
+  useEffect(() => {
+    if (toolCalls > 0) dispatchEvent(new Event("agent-tool"));
+  }, [toolCalls]);
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });

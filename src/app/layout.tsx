@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { GridBackground } from "@/components/GridBackground";
+import { World } from "@/components/World";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { CommandPaletteLoader } from "@/components/CommandPaletteLoader";
@@ -29,11 +29,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>
       <body className="antialiased">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-        <GridBackground />
         <Nav />
         <main id="top">{children}</main>
         <Footer />
         <CommandPaletteLoader />
+        <World />
       </body>
     </html>
   );

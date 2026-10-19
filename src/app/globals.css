@@ -29,3 +29,20 @@ body { font-family: var(--font-sans); min-height: 100dvh; }
   [data-reveal] { transition: opacity .5s ease, transform .5s ease; }
   [data-reveal]:not([data-shown]) { opacity: 0; transform: translateY(16px); }
 }
+
+/* ---- world backdrop ---- */
+.world-fallback {
+  background:
+    radial-gradient(60% 50% at 50% 40%, #8b5cf622, transparent 70%),
+    radial-gradient(40% 40% at 60% 55%, #22d3ee18, transparent 70%),
+    #020306;
+}
+.world-canvas { opacity: 0; transition: opacity 1s ease; }
+.world-canvas[data-live] { opacity: 1; }
+
+/* ---- intro ---- */
+.intro-hint { opacity: calc(1 - var(--p, 0) * 10); }
+.intro-skip { opacity: calc((0.8 - var(--p, 0)) * 6); transition: opacity .3s; }
+.site-nav { transition: opacity .5s ease, transform .5s ease; }
+html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); pointer-events: none; }
+@media (scripting: none), (prefers-reduced-motion: reduce) { .intro { display: none; } }
