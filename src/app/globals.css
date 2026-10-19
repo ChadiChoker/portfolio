@@ -149,7 +149,7 @@ html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); po
 
 /* ---- CV download card ---- */
 .cv-download {
-  position: relative; isolation: isolate; border-radius: 1.25rem;
+  position: relative; isolation: isolate; border-radius: 999px;
   background:
     radial-gradient(80% 120% at 0% 50%, rgba(16,185,129,.14), transparent 60%),
     linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01)), rgba(5,7,12,.6);
@@ -165,6 +165,8 @@ html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); po
 }
 .cv-download:hover { transform: translateY(-2px); box-shadow: 0 0 70px -18px #10b981; }
 .cv-download:hover::before { opacity: 1; }
+.cv-file svg { width: 16px; height: 16px; }
+.cv-arrow svg { width: 14px; height: 14px; }
 .cv-arrow { background: linear-gradient(135deg, #10b981, #22d3ee); box-shadow: 0 0 22px -4px #10b981; }
 .cv-download:hover .cv-arrow svg { animation: cv-drop .9s ease-in-out infinite; }
 @keyframes cv-drop { 0%, 100% { transform: translateY(-1px); } 50% { transform: translateY(3px); } }
