@@ -85,9 +85,16 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
 
     // Full resolution everywhere, with mipmaps + anisotropic filtering: the display is drawn far smaller
     // than the texture (and at an angle), which without mipmaps reads as blurry, shimmering text.
-    rt = new THREE.WebGLRenderTarget(2048, 1328, {
+    // The display texture matches the device's real pixel width (3024px on a 1512pt Retina MacBook,
+    // 4096 max), so the screen stays crisp from on-the-desk all the way to filling the viewport.
+    // Phones keep 2048 + trilinear mipmaps: there the display is drawn far smaller than the texture.
+    const maxTex = renderer.capabilities.maxTextureSize;
+    const texW = Math.min(maxTex, 4096, Math.max(2048, Math.round(view.width * dpr / 256) * 256));
+    rt = new THREE.WebGLRenderTarget(texW, Math.round(texW * 1328 / 2048), {
       colorSpace: THREE.SRGBColorSpace, samples: mobile ? 0 : 4,
-      generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, anisotropy: renderer.capabilities.getMaxAnisotropy(),
+      generateMipmaps: true,
+      minFilter: mobile ? THREE.LinearMipmapLinearFilter : THREE.LinearMipmapNearestFilter, // desktop: no blend with the blurrier level
+      anisotropy: renderer.capabilities.getMaxAnisotropy(),
     });
     hudTex = new THREE.CanvasTexture(drawScreenHud(rt.width, rt.height, mobile));
     hudTex.colorSpace = THREE.SRGBColorSpace;
@@ -173,7 +180,10 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
       spaceCam.position.set(Math.sin(t * 0.2) * 0.4, 2.6, 5.2); spaceCam.lookAt(origin);
       if (pose.power > 0) {
         const aspect = spaceCam.aspect; spaceCam.aspect = rt.width / rt.height; spaceCam.updateProjectionMatrix();
+        // points are sized in pixels: scale them with the texture so the galaxy keeps its look at any resolution
+        galaxy.material.uniforms.uPixelRatio.value = dpr * (rt.width / 2048);
         renderer.setRenderTarget(rt); renderer.render(space, spaceCam);
+        galaxy.material.uniforms.uPixelRatio.value = dpr;
         renderer.autoClear = false; renderer.render(hudScene, hudCam); renderer.autoClear = true;
         renderer.setRenderTarget(null);
         spaceCam.aspect = aspect; spaceCam.updateProjectionMatrix();
