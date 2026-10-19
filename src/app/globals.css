@@ -18,3 +18,9 @@ html { background: var(--color-bg); color: var(--color-fg); color-scheme: dark; 
 body { font-family: var(--font-sans); min-height: 100dvh; }
 ::selection { background: var(--color-accent); color: #000; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+.prose-chat { line-height: 1.6; }
+.prose-chat a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
+.prose-chat ul { list-style: disc; padding-left: 1.2rem; margin: .4rem 0; }
+.prose-chat p + p, .prose-chat p + ul, .prose-chat ul + p { margin-top: .5rem; }
+.prose-chat strong { color: #fff; }
