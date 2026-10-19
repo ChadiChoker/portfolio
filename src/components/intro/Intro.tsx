@@ -25,7 +25,7 @@ export function Intro() {
     const play = shouldPlayIntro({
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       webgl: hasWebGL(),
-      seen: storage.get(),
+      seen: storage.get() && !new URLSearchParams(location.search).has("intro"), // ?intro replays it
       saveData: !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
     });
     introStore.mode = play ? "play" : "none";
