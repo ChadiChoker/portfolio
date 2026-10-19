@@ -142,3 +142,30 @@
 - i18n
 - Light theme (the site is dark-only, by design)
 - Distributed rate limiting with Redis or KV
+
+---
+
+## 10. Addendum (2026-10-19): Cinematic MacBook intro + Latent Space world
+
+Chadi asked for a design "not from this world". He approved the live prototype in `.superpowers/brainstorm/…/macbook-real.html`.
+
+**Story:** the boot screen, then a closed Space Black MacBook Pro. Scrolling opens the lid. The display wakes with a macOS-style menu bar and Chadi's name over a latent-space galaxy. The camera dives into the display, and the same galaxy becomes the site's living background.
+
+**Model:** "MacBook Pro M3 16-inch 2024" by jackbaeten (CC-BY 4.0), rigged and recoloured by William Laverty (`rigged-macbook-3d`, MIT). It is self-hosted at `public/models/macbook.glb` (965 KB, meshopt). The footer credits it.
+
+**Architecture**
+- `src/three/choreography.ts`: a pure `introPose(progress)` that returns `{ lidOpen, turn, power, dive, hud, handoff }`, all in [0,1]. Unit-tested.
+- `src/three/galaxy.ts`: builds the galaxy points (count by device) and handles the shockwave `pulse()`.
+- `src/three/world.ts`: one fixed full-screen WebGL canvas behind the page.
+  - While the intro section is on screen, it renders the MacBook scene, with the galaxy drawn to the display through a render target.
+  - After the hand-off, it renders the same galaxy directly, so the background is continuous with what was on the screen.
+- `src/components/World.tsx`: lazy-loads `world.ts` after hydration via a dynamic import. It feeds it the intro scroll progress and fires `pulse()` on the `agent-tool` window event that `AgentConsole` dispatches for each tool call.
+- `src/components/intro/Intro.tsx`: the 400vh scroll spacer (300vh on mobile) with a sticky overlay holding the boot log, "scroll to open" and "skip intro". It is only on the home page.
+
+**Rules**
+- Reduced motion, no WebGL, or a returning visitor (`localStorage` `intro-seen`) means the intro collapses and the static galaxy background stays.
+- Nav is hidden during the intro and appears on hand-off. It is always visible when the intro is skipped or when scripting is off.
+- The 3D starts after first paint. The page is fully usable and indexable without it.
+- Mobile: 6k galaxy points (16k on desktop), DPR capped at 1.5, no bloom.
+- Case study pages show the galaxy background only.
+- The WebGL grid background (`GridBackground`) is replaced by the galaxy.
