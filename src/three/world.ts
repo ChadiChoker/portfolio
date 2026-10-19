@@ -14,7 +14,8 @@ import { drawScreenHud } from "./screen-hud";
 const MODEL_URL = "/models/macbook.glb";
 const FIT_SIZE = 4.2;
 const CAM_HOME = new THREE.Vector3(0, 0, 10);
-const DEVICE_WIDTH = FIT_SIZE * 1.15; // laptop width plus breathing room
+const DEVICE_WIDTH = FIT_SIZE * 1.15; // laptop width plus breathing room (landscape)
+const DEVICE_WIDTH_PORTRAIT = FIT_SIZE * 1.05; // phones: the laptop spans the width, with a hairline of room
 
 type Rig = {
   pivot: THREE.Object3D; screen: THREE.Mesh; screenMat: THREE.MeshBasicMaterial;
@@ -42,7 +43,7 @@ const later = (cb: () => void) => (typeof requestIdleCallback === "function" ? r
 export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: WorldOptions, events: WorldEvents): World {
   const { mobile } = opts;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, powerPreference: "high-performance" });
-  const dpr = Math.min(opts.dpr, mobile ? 1.5 : 2);
+  const dpr = Math.min(opts.dpr, 2); // phones too: the laptop display is small, so it needs every pixel
   renderer.setPixelRatio(dpr);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.25;
@@ -82,8 +83,13 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
     const light = (color: number, k: number, x: number, y: number, z: number) => { const l = new THREE.DirectionalLight(color, k); l.position.set(x, y, z); room.add(l); };
     light(0xffeeda, 1.15, 5, 8, 6); light(0xc4d2ff, 0.18, -7, 3, 4); light(0xe6eeff, 1.0, -2, 6, -7); light(0x10b981, 0.8, -6, 2, -4);
 
-    rt = new THREE.WebGLRenderTarget(mobile ? 1280 : 2048, mobile ? 830 : 1328, { colorSpace: THREE.SRGBColorSpace, samples: mobile ? 0 : 4 });
-    hudTex = new THREE.CanvasTexture(drawScreenHud(rt.width, rt.height));
+    // Full resolution everywhere, with mipmaps + anisotropic filtering: the display is drawn far smaller
+    // than the texture (and at an angle), which without mipmaps reads as blurry, shimmering text.
+    rt = new THREE.WebGLRenderTarget(2048, 1328, {
+      colorSpace: THREE.SRGBColorSpace, samples: mobile ? 0 : 4,
+      generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, anisotropy: renderer.capabilities.getMaxAnisotropy(),
+    });
+    hudTex = new THREE.CanvasTexture(drawScreenHud(rt.width, rt.height, mobile));
     hudTex.colorSpace = THREE.SRGBColorSpace;
     hudMat = new THREE.MeshBasicMaterial({ map: hudTex, transparent: true, depthTest: false });
     hudScene = new THREE.Scene();
@@ -107,7 +113,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
     camera.updateProjectionMatrix(); spaceCam.updateProjectionMatrix();
     // portrait screens: back the camera off until the whole laptop fits the width
     const halfW = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect;
-    CAM_HOME.z = Math.max(10, DEVICE_WIDTH / 2 / halfW);
+    CAM_HOME.z = Math.max(10, (camera.aspect < 1 ? DEVICE_WIDTH_PORTRAIT : DEVICE_WIDTH) / 2 / halfW);
   };
   resize(view.width, view.height);
 
