@@ -224,7 +224,7 @@ import type { Profile } from "./types";
 
 export const profile: Profile = {
   name: "Chadi Choker",
-  title: "Software & AI Product Engineer",
+  title: "Software & AI Engineer",
   location: "Lebanon · Remote worldwide",
   summary:
     "I build production web and mobile apps across the full stack, and I wire AI into them: LLM features, MCP servers that connect agents to real systems, and agentic workflows that ship faster.",
@@ -246,7 +246,7 @@ import type { Role, Education } from "./types";
 
 export const experience: Role[] = [
   {
-    company: "Aspire Software", title: "Software & AI Product Engineer", start: "04/2026", end: "Present", location: "Lebanon",
+    company: "Aspire Software", title: "Software & AI Engineer", start: "04/2026", end: "Present", location: "Lebanon",
     bullets: [
       "Develop a production SaaS rental-management platform (Rentall / RentWorks+) across the full stack with React and NestJS.",
       "Integrated LLM-driven functionality (Claude) into core business workflows and backend services.",
@@ -1637,7 +1637,7 @@ Expected: all pass.
 
 ![screenshot](docs/screenshot.png)
 
-Portfolio of **Chadi Choker**, Software & AI Product Engineer. The hero is a live Claude agent ("Chadi's AI") that answers questions about my work using tool calls you can watch happen. If no API key is set, it falls back to a scripted offline mode.
+Portfolio of **Chadi Choker**, Software & AI Engineer. The hero is a live Claude agent ("Chadi's AI") that answers questions about my work using tool calls you can watch happen. If no API key is set, it falls back to a scripted offline mode.
 
 ## Stack
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Vercel AI SDK v7 · Claude Haiku 5.5 · WebGL · cmdk · Vitest
@@ -1700,7 +1700,7 @@ Work in the scratchpad directory, `<scratch>/gh/ChadiChoker`. Run `git init`, th
 
 ```markdown
 ### Hi, I'm Chadi 👋
-**Software & AI Product Engineer** · Lebanon · Remote
+**Software & AI Engineer** · Lebanon · Remote
 
 I build production web & mobile apps and wire AI into them: LLM features, **MCP servers** that connect agents to real systems, and agentic workflows with Claude Code.
 

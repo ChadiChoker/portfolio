@@ -2,7 +2,7 @@ import type { Role, Education } from "./types";
 
 export const experience: Role[] = [
   {
-    company: "Aspire Software", title: "Software & AI Product Engineer", start: "04/2026", end: "Present", location: "Lebanon",
+    company: "Aspire Software", title: "Software & AI Engineer", start: "04/2026", end: "Present", location: "Lebanon",
     bullets: [
       "Develop a production SaaS rental-management platform (Rentall / RentWorks+) across the full stack with React and NestJS.",
       "Integrated LLM-driven functionality (Claude) into core business workflows and backend services.",

@@ -2,7 +2,7 @@
 
 ![Portfolio hero with the live agent console](docs/screenshot.png)
 
-Portfolio of **Chadi Choker**, Software & AI Product Engineer.
+Portfolio of **Chadi Choker**, Software & AI Engineer.
 
 The hero is a live Claude agent, **"Chadi's AI"**, that answers visitors' questions about my work. It calls tools over my real project, experience and service data, and visitors watch those tool calls happen. If no API key is configured, it falls back to a scripted offline mode, so the console never breaks.
 

@@ -10,7 +10,7 @@
 |---|---|
 | **Primary goal** | Win freelance clients |
 | **Secondary goal** | Impress companies that are hiring |
-| **Positioning** | *Software & AI Product Engineer: I build production web apps and wire AI into them.* |
+| **Positioning** | *Software & AI Engineer: I build production web apps and wire AI into them.* |
 | **Signature feature** | A live "Ask my AI" agent in the hero. It answers questions about Chadi's work using visible tool calls, so it works as both a portfolio item and a proof of skill. |
 | **Visual direction** | **A, Agent Console:** dark, dev-terminal look with an emerald accent (`#10b981`), a subtle animated grid and a ⌘K palette |
 | **Success criteria** | Lighthouse 95 or higher in every category, desktop and mobile. A visitor can reach contact in at most 2 clicks from any page. The agent answers grounded questions correctly and never shows a broken state. |

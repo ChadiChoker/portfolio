@@ -2,7 +2,7 @@ import type { Profile } from "./types";
 
 export const profile: Profile = {
   name: "Chadi Choker",
-  title: "Software & AI Product Engineer",
+  title: "Software & AI Engineer",
   location: "Lebanon · Remote worldwide",
   summary:
     "I build production web and mobile apps across the full stack, and I wire AI into them: LLM features, MCP servers that connect agents to real systems, and agentic workflows that ship faster.",
