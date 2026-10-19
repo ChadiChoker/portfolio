@@ -3,13 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { introStore } from "@/three/intro-store";
 import { shouldPlayIntro } from "@/three/intro-gate";
 
-const SEEN_KEY = "intro-seen";
 const BOOT = ["> initializing chadi.ai", "> loading neural weights ........ ok", "> mounting latent space .......... ok", "> agent online"];
 
-const storage = {
-  get: () => { try { return localStorage.getItem(SEEN_KEY) === "1"; } catch { return false; } },
-  set: () => { try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* private mode */ } },
-};
 const hasWebGL = () => { try { return !!document.createElement("canvas").getContext("webgl2"); } catch { return false; } };
 const setPhase = (phase: "play" | "done") => { document.documentElement.dataset.intro = phase; };
 
@@ -25,13 +20,12 @@ export function Intro() {
     const play = shouldPlayIntro({
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       webgl: hasWebGL(),
-      seen: storage.get() && !new URLSearchParams(location.search).has("intro"), // ?intro replays it
       saveData: !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
     });
     introStore.mode = play ? "play" : "none";
     introStore.progress = play ? 0 : 1;
     setPhase(play ? "play" : "done");
-    // Browser-only facts (storage, WebGL, media queries) can only be read after hydration.
+    // Browser-only facts (WebGL, media queries) can only be read after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState(play ? "play" : "off");
     return () => { introStore.mode = "none"; introStore.progress = 1; setPhase("done"); };
@@ -60,7 +54,7 @@ export function Intro() {
       const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
       introStore.progress = p;
       el.style.setProperty("--p", String(p));
-      if (p > 0.97 && document.documentElement.dataset.intro !== "done") { setPhase("done"); storage.set(); }
+      if (p > 0.97 && document.documentElement.dataset.intro !== "done") setPhase("done");
       else if (p < 0.9 && document.documentElement.dataset.intro === "done") setPhase("play");
     };
     onScroll();
@@ -69,7 +63,6 @@ export function Intro() {
   }, [state]);
 
   function skip() {
-    storage.set();
     introStore.mode = "none"; introStore.progress = 1;
     setPhase("done"); setState("off");
     scrollTo({ top: 0 });

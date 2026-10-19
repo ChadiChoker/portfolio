@@ -1,5 +1,5 @@
-export type IntroEnv = { reducedMotion: boolean; webgl: boolean; seen: boolean; saveData: boolean };
+export type IntroEnv = { reducedMotion: boolean; webgl: boolean; saveData: boolean };
 
-// The intro is a one-time cinematic: never for returning visitors, reduced motion, data saver, or no WebGL.
-export const shouldPlayIntro = ({ reducedMotion, webgl, seen, saveData }: IntroEnv) =>
-  webgl && !reducedMotion && !seen && !saveData;
+// The reveal plays on every visit (skip is one tap away), except where it would hurt:
+// reduced motion, data saver, or no WebGL.
+export const shouldPlayIntro = ({ reducedMotion, webgl, saveData }: IntroEnv) => webgl && !reducedMotion && !saveData;

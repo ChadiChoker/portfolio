@@ -34,10 +34,12 @@ export function drawScreenHud(width: number, height: number, now = new Date()): 
   g.fillStyle = "#9aa4ae"; g.font = `400 ${44 * u}px ${SANS}`; g.fillText(profile.title, left + 4 * u, 615 * u);
 
   // spotlight-style prompt, a hint of the agent waiting inside
-  const w = 560 * u, h = 64 * u, y = 700 * u;
+  const prompt = "> Ask me anything about Chadi's work…";
+  g.font = `400 ${24 * u}px ${MONO}`; g.textBaseline = "middle";
+  const pad = 28 * u, w = g.measureText(prompt).width + pad * 2, h = 64 * u, y = 700 * u; // pill hugs the text in any font
   g.fillStyle = "rgba(255,255,255,0.08)"; g.strokeStyle = "rgba(16,185,129,0.6)"; g.lineWidth = 2 * u;
   g.beginPath(); g.roundRect(left, y, w, h, 16 * u); g.fill(); g.stroke();
-  g.fillStyle = "rgba(255,255,255,.6)"; g.font = `400 ${24 * u}px ${MONO}`; g.textBaseline = "middle";
-  g.fillText("> Ask me anything about Chadi's work…", left + 26 * u, y + h / 2);
+  g.fillStyle = "rgba(255,255,255,.6)";
+  g.fillText(prompt, left + pad, y + h / 2);
   return c;
 }
