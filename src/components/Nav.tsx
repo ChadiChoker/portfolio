@@ -14,7 +14,7 @@ export function Nav() {
         <div className="flex items-center gap-2">
           <button onClick={() => dispatchEvent(new Event("open-palette"))} className="hidden rounded border border-border px-2 py-1 text-[11px] text-muted hover:text-accent sm:block" aria-label="Open command menu">⌘K</button>
           <button onClick={() => dispatchEvent(new Event("open-palette"))} className="rounded border border-border px-3 py-1.5 text-xs text-muted sm:hidden" aria-label="Open menu">menu</button>
-          <Link href="/#contact" className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-black">Hire me</Link>
+          <Link href="/#contact" className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-black">Let&apos;s talk</Link>
         </div>
       </nav>
     </header>

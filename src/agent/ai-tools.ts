@@ -15,5 +15,5 @@ export const aiTools = {
   }),
   get_experience: tool({ description: "Chadi's work history and education.", inputSchema: z.object({}), execute: async () => getExperience() }),
   get_services: tool({ description: "Freelance services Chadi offers.", inputSchema: z.object({}), execute: async () => getServices() }),
-  get_contact: tool({ description: "How to contact or hire Chadi.", inputSchema: z.object({}), execute: async () => getContact() }),
+  get_contact: tool({ description: "How to contact Chadi or start a project with him.", inputSchema: z.object({}), execute: async () => getContact() }),
 };

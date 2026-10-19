@@ -34,7 +34,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
         <div className="mt-3 flex flex-wrap gap-2">{p.stack.map((s) => <span key={s} className="rounded-md border border-border px-2 py-1 text-xs">{s}</span>)}</div></section>
       <div className="mt-16 rounded-xl border border-accent/30 bg-panel p-6 text-center">
         <p className="font-semibold">Want something like this built?</p>
-        <Link href="/#contact" className="mt-3 inline-block rounded-md bg-accent px-4 py-2 font-mono text-sm font-semibold text-black">Hire me →</Link>
+        <Link href="/#contact" className="mt-3 inline-block rounded-md bg-accent px-4 py-2 font-mono text-sm font-semibold text-black">Let&apos;s talk →</Link>
       </div>
     </article>
   );

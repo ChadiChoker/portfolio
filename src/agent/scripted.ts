@@ -6,7 +6,7 @@ export type ScriptedReply = { tool: { name: string; args: Record<string, unknown
 export const SUGGESTED_PROMPTS = [
   "What AI work has Chadi shipped?",
   "Can he build an MCP server for my product?",
-  "How do I hire him?",
+  "How do I contact him?",
 ];
 
 // Whole-word match, so "ai" doesn't hit "chadi" or "email".
