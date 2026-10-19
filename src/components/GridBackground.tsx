@@ -50,8 +50,13 @@ export function GridBackground() {
       raf = requestAnimationFrame(frame);
     };
     resize(); addEventListener("resize", resize); addEventListener("pointermove", move);
-    raf = requestAnimationFrame(frame);
-    return () => { cancelAnimationFrame(raf); removeEventListener("resize", resize); removeEventListener("pointermove", move); };
+    // Start animating once the main thread is idle so the shader never competes with first paint.
+    const start = () => { raf = requestAnimationFrame(frame); };
+    const idle = "requestIdleCallback" in window ? requestIdleCallback(start, { timeout: 2000 }) : setTimeout(start, 1200);
+    return () => {
+      if ("cancelIdleCallback" in window) cancelIdleCallback(idle as number); else clearTimeout(idle);
+      cancelAnimationFrame(raf); removeEventListener("resize", resize); removeEventListener("pointermove", move);
+    };
   }, []);
 
   return fallback ? (

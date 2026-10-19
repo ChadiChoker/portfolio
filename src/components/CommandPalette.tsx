@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { projects } from "@/content/projects";
 import { profile } from "@/content/profile";
 
-export function CommandPalette() {
-  const [open, setOpen] = useState(false);
+export function CommandPalette({ defaultOpen = false }: { defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   const router = useRouter();
 
   useEffect(() => {

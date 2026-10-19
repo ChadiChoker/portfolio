@@ -24,3 +24,8 @@ body { font-family: var(--font-sans); min-height: 100dvh; }
 .prose-chat ul { list-style: disc; padding-left: 1.2rem; margin: .4rem 0; }
 .prose-chat p + p, .prose-chat p + ul, .prose-chat ul + p { margin-top: .5rem; }
 .prose-chat strong { color: #fff; }
+
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-reveal] { transition: opacity .5s ease, transform .5s ease; }
+  [data-reveal]:not([data-shown]) { opacity: 0; transform: translateY(16px); }
+}

@@ -4,7 +4,7 @@ import "./globals.css";
 import { GridBackground } from "@/components/GridBackground";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
-import { CommandPalette } from "@/components/CommandPalette";
+import { CommandPaletteLoader } from "@/components/CommandPaletteLoader";
 import { profile } from "@/content/profile";
 import { SITE_URL } from "@/lib/site";
 
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Nav />
         <main id="top">{children}</main>
         <Footer />
-        <CommandPalette />
+        <CommandPaletteLoader />
       </body>
     </html>
   );

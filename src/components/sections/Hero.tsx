@@ -1,4 +1,4 @@
-import { AgentConsole } from "@/components/console/AgentConsole";
+import { ConsoleLoader } from "@/components/console/ConsoleLoader";
 import { profile } from "@/content/profile";
 
 export function Hero() {
@@ -14,7 +14,7 @@ export function Hero() {
           <a href="#projects" className="rounded-md border border-border px-4 py-2.5 hover:border-accent hover:text-accent">See work</a>
         </div>
       </div>
-      <AgentConsole />
+      <ConsoleLoader />
     </section>
   );
 }
