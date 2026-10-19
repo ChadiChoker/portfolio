@@ -50,3 +50,27 @@ body { font-family: var(--font-sans); min-height: 100dvh; }
 html[data-intro="play"] .hero-content { opacity: 0; transform: translateY(28px) scale(.98); filter: blur(6px); }
 html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); pointer-events: none; }
 @media (scripting: none), (prefers-reduced-motion: reduce) { .intro { display: none; } }
+
+/* Moving border: a conic "comet" rotates behind a ring-shaped mask. Only transform animates, so it
+   stays on the compositor. Fades out between 50% and 70% of the intro (the dive). */
+.intro-frame {
+  position: absolute; inset: 10px; z-index: 30; pointer-events: none; contain: strict;
+  border-radius: 22px; padding: 2px; overflow: hidden;
+  /* ring = full box minus content box */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: clamp(0, calc((0.7 - var(--p, 0)) * 5), 1);
+}
+.intro-frame-glow { padding: 6px; opacity: clamp(0, calc((0.7 - var(--p, 0)) * 3), 0.35); } /* soft halo: a wider, fainter ring (no blur filter, which would repaint every frame) */
+.intro-frame-spin {
+  position: absolute; left: 50%; top: 50%; width: 150vmax; height: 150vmax; translate: -50% -50%; /* just covers the diagonal */
+  background: conic-gradient(from 0deg,
+    transparent 0 30%, #10b981 40%, #22d3ee 45%, transparent 50%,
+    transparent 80%, #8b5cf6 90%, #22d3ee 95%, transparent 100%);
+  animation: frame-spin 7s linear infinite;
+  will-change: transform;
+}
+@keyframes frame-spin { to { transform: rotate(1turn); } }
+@media (max-width: 768px) { .intro-frame { inset: 6px; border-radius: 16px; } }

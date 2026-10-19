@@ -27,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="antialiased">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <Nav />
-        <main id="top">{children}</main>
+        <main id="top" className="pt-14">{children}</main>
         <Footer />
         <CommandPaletteLoader />
         <World />

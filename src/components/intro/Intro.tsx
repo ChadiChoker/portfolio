@@ -72,7 +72,7 @@ export function Intro() {
   if (state === "off") return null;
 
   return (
-    <section ref={ref} id="intro" aria-label="Intro" className="intro relative h-[300vh] md:h-[400vh]">
+    <section ref={ref} id="intro" aria-label="Intro" className="intro relative -mt-14 h-[300vh] md:h-[400vh]">
       <div className="sticky top-0 h-dvh">
         <div className={`absolute inset-0 z-40 flex items-center justify-center bg-black transition-opacity duration-700 ${booted ? "pointer-events-none opacity-0" : ""}`}>
           <div className="w-[min(340px,86vw)] font-mono text-[13px] leading-7 text-accent">
@@ -82,6 +82,9 @@ export function Intro() {
             <div className="mt-3 h-0.5 bg-accent/20"><div className="h-full bg-accent transition-[width] duration-300" style={{ width: `${(boot / BOOT.length) * 100}%` }} /></div>
           </div>
         </div>
+        {/* moving light line around the screen edge while the MacBook is on stage */}
+        <div aria-hidden className="intro-frame intro-frame-glow"><div className="intro-frame-spin" /></div>
+        <div aria-hidden className="intro-frame"><div className="intro-frame-spin" /></div>
         <p className="intro-hint absolute bottom-8 left-1/2 -translate-x-1/2 font-mono text-[11px] tracking-[0.3em] text-muted">SCROLL TO OPEN</p>
         <button onClick={skip} className="intro-skip absolute bottom-7 right-5 z-50 rounded-full border border-border bg-black/40 px-3 py-1.5 font-mono text-[11px] text-muted backdrop-blur hover:border-accent hover:text-accent">
           skip intro ↓

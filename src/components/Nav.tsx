@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function Nav() {
   return (
-    <header className="site-nav sticky top-0 z-30 border-b border-border/60 bg-bg/70 backdrop-blur">
+    <header className="site-nav fixed inset-x-0 top-0 z-30 border-b border-border/60 bg-bg/70 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 font-mono text-sm">
         <Link href="/#top" className="font-semibold text-fg"><span className="text-accent">~/</span>chadi</Link>
         <div className="hidden gap-6 text-muted sm:flex">
