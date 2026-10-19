@@ -3,11 +3,8 @@ import { projects } from "@/content/projects";
 
 export type ScriptedReply = { tool: { name: string; args: Record<string, unknown> } | null; text: string };
 
-export const SUGGESTED_PROMPTS = [
-  "What AI work has Chadi shipped?",
-  "Can he build an MCP server for my product?",
-  "How do I contact him?",
-];
+import { SUGGESTED_PROMPTS } from "./prompts";
+export { SUGGESTED_PROMPTS };
 
 // Whole-word match, so "ai" doesn't hit "chadi" or "email".
 const has = (q: string, words: string[]) => words.some((w) => new RegExp(`\\b${w}\\b`).test(q));

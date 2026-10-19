@@ -3,7 +3,7 @@ import { profile } from "@/content/profile";
 
 export function Hero() {
   return (
-    <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-12 md:grid-cols-[1fr_1.1fr] md:pb-20 md:pt-24">
+    <section className="hero-content mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-12 md:grid-cols-[1fr_1.1fr] md:pb-20 md:pt-24">
       <div>
         <p className="font-mono text-[11px] tracking-[0.2em] text-accent">● {profile.availability.toUpperCase()}</p>
         <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">{profile.name}</h1>

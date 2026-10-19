@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { introStore } from "@/three/intro-store";
+import { introStore, updateIntro } from "@/three/intro-store";
 import { shouldPlayIntro } from "@/three/intro-gate";
 
 const BOOT = ["> initializing chadi.ai", "> loading neural weights ........ ok", "> mounting latent space .......... ok", "> agent online"];
 
-const hasWebGL = () => { try { return !!document.createElement("canvas").getContext("webgl2"); } catch { return false; } };
+// The 3D renders in a worker, so it needs WebGL2 and OffscreenCanvas.
+const hasWebGL = () => { try { return "transferControlToOffscreen" in HTMLCanvasElement.prototype && !!document.createElement("canvas").getContext("webgl2"); } catch { return false; } };
 const setPhase = (phase: "play" | "done") => { document.documentElement.dataset.intro = phase; };
 
 // Scroll runway for the MacBook intro. The 3D lives in <World/>; this section owns the scroll
@@ -22,13 +23,12 @@ export function Intro() {
       webgl: hasWebGL(),
       saveData: !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
     });
-    introStore.mode = play ? "play" : "none";
-    introStore.progress = play ? 0 : 1;
+    updateIntro({ mode: play ? "play" : "none", progress: play ? 0 : 1 });
     setPhase(play ? "play" : "done");
     // Browser-only facts (WebGL, media queries) can only be read after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState(play ? "play" : "off");
-    return () => { introStore.mode = "none"; introStore.progress = 1; setPhase("done"); };
+    return () => { updateIntro({ mode: "none", progress: 1, end: 0 }); setPhase("done"); };
   }, []);
 
   // boot log: advances on a timer and finishes once the model is ready. If the 3D fails or
@@ -53,8 +53,7 @@ export function Intro() {
       if (!el) return;
       const r = el.getBoundingClientRect();
       const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
-      introStore.progress = p;
-      introStore.end = el.offsetTop + el.offsetHeight - innerHeight;
+      updateIntro({ progress: p, end: el.offsetTop + el.offsetHeight - innerHeight });
       el.style.setProperty("--p", String(p));
       if (p > 0.97 && document.documentElement.dataset.intro !== "done") setPhase("done");
       else if (p < 0.9 && document.documentElement.dataset.intro === "done") setPhase("play");
@@ -65,7 +64,7 @@ export function Intro() {
   }, [state]);
 
   function skip() {
-    introStore.mode = "none"; introStore.progress = 1; introStore.end = 0;
+    updateIntro({ mode: "none", progress: 1, end: 0 });
     setPhase("done"); setState("off");
     scrollTo({ top: 0 });
   }
@@ -78,7 +77,8 @@ export function Intro() {
         <div className={`absolute inset-0 z-40 flex items-center justify-center bg-black transition-opacity duration-700 ${booted ? "pointer-events-none opacity-0" : ""}`}>
           <div className="w-[min(340px,86vw)] font-mono text-[13px] leading-7 text-accent">
             <p className="mb-6 font-sans text-6xl font-bold tracking-tight text-fg">chadi<span className="text-accent">.ai</span></p>
-            {BOOT.slice(0, boot).map((l) => <p key={l}>{l}</p>)}
+            {/* every line is laid out from the start and revealed in place, so nothing shifts */}
+            {BOOT.map((l, i) => <p key={l} className={i < boot ? "" : "invisible"}>{l}</p>)}
             <div className="mt-3 h-0.5 bg-accent/20"><div className="h-full bg-accent transition-[width] duration-300" style={{ width: `${(boot / BOOT.length) * 100}%` }} /></div>
           </div>
         </div>

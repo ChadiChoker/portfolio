@@ -26,3 +26,16 @@ export function introPose(progress: number): IntroPose {
     handoff: beat(p, 0.86, 0.97),
   };
 }
+
+// The light change from intro to page: as the camera enters the display the scene floods with light
+// (peak at 0.95), part of it carries over as an afterglow, which then settles away as the visitor
+// scrolls into the content. One continuous curve, shared by the WebGL galaxy and the CSS light wash.
+const AFTERGLOW = 0.35;
+export function introLight(progress: number, pxPastIntro: number, viewportHeight: number) {
+  const p = clamp01(progress);
+  let flash: number;
+  if (p < 0.95) flash = beat(p, 0.84, 0.95);
+  else if (p < 1) flash = 1 - (1 - AFTERGLOW) * beat(p, 0.95, 1);
+  else flash = AFTERGLOW * Math.exp(-Math.max(0, pxPastIntro) / (0.6 * viewportHeight));
+  return { flash };
+}

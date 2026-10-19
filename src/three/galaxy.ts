@@ -12,7 +12,7 @@ const WAVE_SPEED = 3.5;
 const vertex = /* glsl */ `
   attribute vec3 color;
   attribute float aRadius;
-  uniform float uSize; uniform float uPixelRatio; uniform float uTime; uniform float uWave;
+  uniform float uSize; uniform float uPixelRatio; uniform float uTime; uniform float uWave; uniform float uFlash;
   varying vec3 vColor;
   void main() {
     vColor = color;
@@ -24,8 +24,10 @@ const vertex = /* glsl */ `
       p.y += lift * 0.6;
       vColor += lift * 0.6;
     }
+    // light flood at the intro hand-off: warmer, brighter, slightly larger points
+    vColor = mix(vColor, vec3(0.78, 1.0, 0.92), uFlash * 0.35) * (1.0 + uFlash * 1.4);
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
-    gl_PointSize = uSize * uPixelRatio * (8.0 / -mv.z);
+    gl_PointSize = uSize * uPixelRatio * (8.0 / -mv.z) * (1.0 + uFlash * 0.5);
     gl_Position = projectionMatrix * mv;
   }`;
 const fragment = /* glsl */ `
@@ -74,7 +76,7 @@ export function createGalaxy(count: number): Galaxy {
     fragmentShader: fragment,
     uniforms: {
       uSize: { value: 2.2 }, uPixelRatio: { value: 1 }, uOpacity: { value: 1 },
-      uTime: { value: 0 }, uWave: { value: -1 },
+      uTime: { value: 0 }, uWave: { value: -1 }, uFlash: { value: 0 },
     },
     transparent: true,
     depthWrite: false,

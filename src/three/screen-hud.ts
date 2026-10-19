@@ -5,10 +5,10 @@ const APPLE = "M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4
 const SANS = '-apple-system, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif';
 const MONO = 'ui-monospace, "SF Mono", Menlo, monospace';
 
-export function drawScreenHud(width: number, height: number): HTMLCanvasElement {
-  const c = document.createElement("canvas");
-  c.width = width; c.height = height;
-  const g = c.getContext("2d")!;
+export function drawScreenHud(width: number, height: number): OffscreenCanvas | HTMLCanvasElement {
+  // OffscreenCanvas inside the render worker; a DOM canvas as a fallback.
+  const c = typeof OffscreenCanvas === "function" ? new OffscreenCanvas(width, height) : Object.assign(document.createElement("canvas"), { width, height });
+  const g = c.getContext("2d") as OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
   const u = height / 1000; // layout unit
 
   // menu bar

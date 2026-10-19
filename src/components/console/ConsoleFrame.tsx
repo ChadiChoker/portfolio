@@ -1,6 +1,6 @@
 "use client";
 import type { ReactNode, RefObject } from "react";
-import { SUGGESTED_PROMPTS } from "@/agent/scripted";
+import { SUGGESTED_PROMPTS } from "@/agent/prompts";
 import { MAX_CHARS } from "@/lib/chat-guard";
 
 // Presentational shell shared by the lightweight loader and the live console,

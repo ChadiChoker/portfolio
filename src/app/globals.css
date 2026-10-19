@@ -9,9 +9,10 @@
   --color-accent: #10b981;
 }
 
-@theme inline {
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, Menlo, monospace;
+/* System fonts: SF Pro / SF Mono on Apple, Segoe / Cascadia on Windows. Zero downloads, no swap. */
+@theme {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Code", Consolas, monospace;
 }
 
 html { background: var(--color-bg); color: var(--color-fg); color-scheme: dark; scroll-behavior: smooth; }
@@ -44,5 +45,16 @@ body { font-family: var(--font-sans); min-height: 100dvh; }
 .intro-hint { opacity: calc(1 - var(--p, 0) * 10); }
 .intro-skip { opacity: calc((0.8 - var(--p, 0)) * 6); transition: opacity .3s; }
 .site-nav { transition: opacity .5s ease, transform .5s ease; }
+/* light flood at the hand-off (opacity driven by World from the shared light curve) */
+.light-wash {
+  background:
+    radial-gradient(50% 45% at 50% 45%, rgba(236, 255, 246, 0.3), transparent 70%),
+    radial-gradient(80% 70% at 50% 50%, rgba(16, 185, 129, 0.42), transparent 75%);
+  mix-blend-mode: screen;
+  will-change: opacity;
+}
+/* the hero rises in with the light instead of already being there */
+.hero-content { transition: opacity 1s ease .15s, transform 1.2s cubic-bezier(.2,.7,.2,1) .15s, filter 1s ease .15s; }
+html[data-intro="play"] .hero-content { opacity: 0; transform: translateY(28px) scale(.98); filter: blur(6px); }
 html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); pointer-events: none; }
 @media (scripting: none), (prefers-reduced-motion: reduce) { .intro { display: none; } }

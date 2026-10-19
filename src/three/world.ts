@@ -2,13 +2,14 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { createGalaxy } from "./galaxy";
-import { introPose } from "./choreography";
+import { introPose, introLight } from "./choreography";
 import { drawScreenHud } from "./screen-hud";
-import { introStore } from "./intro-store";
 
-// One fixed full-screen canvas behind the page. While the intro plays it renders the MacBook,
-// with the galaxy drawn onto its display through a render target; after the hand-off it renders
-// that same galaxy directly, so the site's background is literally what was on the screen.
+// One full-screen canvas behind the page. While the intro plays it renders the MacBook, with the
+// galaxy drawn onto its display through a render target; after the hand-off it renders that same
+// galaxy directly, so the site's background is what was on the screen.
+// Environment-agnostic (no window/document): it runs inside a Web Worker on an OffscreenCanvas,
+// and the page feeds it input through the methods below.
 
 const MODEL_URL = "/models/macbook.glb";
 const FIT_SIZE = 4.2;
@@ -21,15 +22,37 @@ type Rig = {
   hingeY: number; relY: number; relZ: number; targetY: number; openX: number; closedX: number;
 };
 
-export type World = { pulse: () => void; dispose: () => void };
+export type WorldOptions = { mobile: boolean; dpr: number; width: number; height: number };
+export type WorldEvents = { ready: () => void; failed: () => void };
+export type IntroInput = { mode: "none" | "play"; progress: number; end: number };
+export type World = {
+  resize: (width: number, height: number) => void;
+  pointer: (x: number, y: number) => void; // -0.5..0.5 from the viewport centre
+  scroll: (y: number, max: number) => void;
+  intro: (state: IntroInput) => void;
+  visible: (visible: boolean) => void;
+  pulse: () => void;
+  dispose: () => void;
+};
 
-export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boolean }): World {
+const raf: (cb: (t: number) => void) => number =
+  typeof requestAnimationFrame === "function" ? (cb) => requestAnimationFrame(cb) : (cb) => setTimeout(() => cb(performance.now()), 16) as unknown as number;
+const cancelRaf = (id: number) => (typeof cancelAnimationFrame === "function" ? cancelAnimationFrame(id) : clearTimeout(id));
+const later = (cb: () => void) => (typeof requestIdleCallback === "function" ? requestIdleCallback(cb, { timeout: 800 }) : setTimeout(cb, 30));
+
+export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: WorldOptions, events: WorldEvents): World {
+  const { mobile } = opts;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, powerPreference: "high-performance" });
-  const dpr = Math.min(devicePixelRatio, mobile ? 1.5 : 2);
+  const dpr = Math.min(opts.dpr, mobile ? 1.5 : 2);
   renderer.setPixelRatio(dpr);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.25;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  // ---- input fed by the page ----
+  const view = { width: opts.width, height: opts.height, scrollY: 0, scrollMax: 1 };
+  const intro: IntroInput = { mode: "none", progress: 1, end: 0 };
+  const mouse = new THREE.Vector2(), drift = new THREE.Vector2(); // drift eases toward the mouse, so the hand-off never jumps
 
   // ---- the galaxy (screen content + background) ----
   const galaxy = createGalaxy(mobile ? 6000 : 16000);
@@ -40,7 +63,7 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
   const spaceCam = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
   spaceCam.position.set(0, 2.6, 5.2);
 
-  // ---- the MacBook scene (only when the intro plays) ----
+  // ---- the MacBook scene (built the first time the intro asks for it) ----
   const room = new THREE.Scene();
   room.background = new THREE.Color(0x000000);
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 200);
@@ -48,70 +71,68 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
   room.add(holder);
   let rig: Rig | null = null;
   let rt: THREE.WebGLRenderTarget | null = null;
-  let hudScene: THREE.Scene | null = null, hudMat: THREE.MeshBasicMaterial | null = null;
+  let hudScene: THREE.Scene | null = null, hudMat: THREE.MeshBasicMaterial | null = null, hudTex: THREE.Texture | null = null;
   const hudCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  let introRequested = false, disposed = false;
 
-  const later = (cb: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(cb, { timeout: 800 }) : setTimeout(cb, 50));
-  // Loaded the first time the intro asks for it, so World and Intro can start in any order.
-  let introRequested = false;
-  const loadIntro = () => later(() => { try { setupIntro(); } catch { introStore.failed = true; } });
+  const fail = () => { if (!disposed) events.failed(); };
   const setupIntro = () => {
+    if (disposed) return;
     room.environment = studioEnvironment(renderer);
     room.add(new THREE.AmbientLight(0xffffff, 0.1));
     const light = (color: number, k: number, x: number, y: number, z: number) => { const l = new THREE.DirectionalLight(color, k); l.position.set(x, y, z); room.add(l); };
     light(0xffeeda, 1.15, 5, 8, 6); light(0xc4d2ff, 0.18, -7, 3, 4); light(0xe6eeff, 1.0, -2, 6, -7); light(0x10b981, 0.8, -6, 2, -4);
 
     rt = new THREE.WebGLRenderTarget(mobile ? 1280 : 2048, mobile ? 830 : 1328, { colorSpace: THREE.SRGBColorSpace, samples: mobile ? 0 : 4 });
-    const hudTex = new THREE.CanvasTexture(drawScreenHud(rt.width, rt.height));
+    hudTex = new THREE.CanvasTexture(drawScreenHud(rt.width, rt.height));
     hudTex.colorSpace = THREE.SRGBColorSpace;
     hudMat = new THREE.MeshBasicMaterial({ map: hudTex, transparent: true, depthTest: false });
     hudScene = new THREE.Scene();
     hudScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), hudMat));
 
     later(() => {
+      if (disposed) return;
       const loader = new GLTFLoader();
       loader.setMeshoptDecoder(MeshoptDecoder);
       loader.load(MODEL_URL, (gltf) => {
-        try { rig = rigModel(gltf.scene, holder, rt!.texture); introStore.ready = true; } catch { introStore.failed = true; }
-      }, undefined, () => { introStore.failed = true; });
+        if (disposed) return;
+        try { rig = rigModel(gltf.scene, holder, rt!.texture); events.ready(); } catch { fail(); }
+      }, undefined, fail);
     });
   };
 
-  // ---- loop ----
-  const sBox = new THREE.Box3(), sCenter = new THREE.Vector3(), sSize = new THREE.Vector3();
-  const camDive = new THREE.Vector3(), look = new THREE.Vector3(), origin = new THREE.Vector3();
-  const mouse = new THREE.Vector2(), drift = new THREE.Vector2(); // drift eases toward the mouse, so the hand-off never jumps
-  let smooth = introStore.progress, raf = 0, last = performance.now(), running = true;
-
-  const onMove = (e: PointerEvent) => mouse.set(e.clientX / innerWidth - 0.5, e.clientY / innerHeight - 0.5);
-  const resize = () => {
-    renderer.setSize(innerWidth, innerHeight, false);
-    camera.aspect = spaceCam.aspect = innerWidth / innerHeight;
+  const resize = (width: number, height: number) => {
+    view.width = width; view.height = height;
+    renderer.setSize(width, height, false);
+    camera.aspect = spaceCam.aspect = width / height;
     camera.updateProjectionMatrix(); spaceCam.updateProjectionMatrix();
     // portrait screens: back the camera off until the whole laptop fits the width
     const halfW = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect;
     CAM_HOME.z = Math.max(10, DEVICE_WIDTH / 2 / halfW);
   };
-  const onVisibility = () => {
-    running = !document.hidden;
-    if (running) { last = performance.now(); raf = requestAnimationFrame(frame); } else cancelAnimationFrame(raf);
-  };
-  addEventListener("pointermove", onMove); addEventListener("resize", resize); document.addEventListener("visibilitychange", onVisibility);
-  resize();
+  resize(view.width, view.height);
+
+  // ---- loop ----
+  const sBox = new THREE.Box3(), sCenter = new THREE.Vector3(), sSize = new THREE.Vector3();
+  const camDive = new THREE.Vector3(), look = new THREE.Vector3(), origin = new THREE.Vector3();
+  let smooth = 1, handle = 0, last = performance.now(), running = true;
 
   function frame(now: number) {
+    if (!running) return;
     // Phones draw the slow background drift at 30fps (half the battery); the intro always runs at full rate.
-    const background = !(introStore.mode === "play" && smooth < 0.999);
-    if (mobile && background && now - last < 32) { raf = requestAnimationFrame(frame); return; }
+    const background = !(intro.mode === "play" && smooth < 0.999);
+    if (mobile && background && now - last < 32) { handle = raf(frame); return; }
     const dt = Math.min((now - last) / 1000, 0.05); last = now;
     const t = now / 1000;
-    if (introStore.mode === "play" && !introRequested) { introRequested = true; loadIntro(); }
-    smooth += (introStore.progress - smooth) * Math.min(1, dt * 4); // damped follow: flicks become one glide
-    const intro = introStore.mode === "play" && rig !== null && smooth < 0.999;
+    if (intro.mode === "play" && !introRequested) { introRequested = true; later(() => { try { setupIntro(); } catch { fail(); } }); }
+    smooth += (intro.progress - smooth) * Math.min(1, dt * 4); // damped follow: flicks become one glide
+    const playing = intro.mode === "play" && rig !== null && smooth < 0.999;
     const pose = introPose(smooth);
+    const after = Math.max(0, view.scrollY - intro.end);
+    galaxy.material.uniforms.uFlash.value = intro.mode === "play" ? introLight(smooth, after, view.height).flash : 0;
     galaxy.update(dt, t);
 
-    if (intro && rig && rt && hudScene && hudMat) {
+    if (playing && rig && rt && hudScene && hudMat) {
       drift.set(0, 0);
       // lid hinge with seat lift, so the closed lid rests on the keys instead of sinking into them
       rig.pivot.rotation.x = rig.closedX + (rig.openX - rig.closedX) * pose.lidOpen;
@@ -156,24 +177,33 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
     } else {
       // site background: the galaxy, drifting with scroll for depth, dimmed behind content.
       // Depth starts at 0 where the intro ends, so the first frame matches the hand-off pose exactly.
-      const after = Math.max(0, scrollY - introStore.end);
-      const depth = Math.min(after / Math.max(1, document.body.scrollHeight - innerHeight - introStore.end), 1);
+      const depth = Math.min(after / Math.max(1, view.scrollMax - intro.end), 1);
       drift.lerp(mouse, Math.min(1, dt * 1.5));
       spaceCam.position.set(Math.sin(t * 0.2) * 0.4 + drift.x * 0.6, 2.6 - depth * 1.6 - drift.y * 0.3, 5.2 - depth * 1.2);
       spaceCam.lookAt(origin);
       galaxy.material.uniforms.uOpacity.value = BG_OPACITY;
       renderer.render(space, spaceCam);
     }
-    if (running) raf = requestAnimationFrame(frame);
+    handle = raf(frame);
   }
-  raf = requestAnimationFrame(frame);
+  handle = raf(frame);
 
   return {
+    resize,
+    pointer: (x, y) => mouse.set(x, y),
+    scroll: (y, max) => { view.scrollY = y; view.scrollMax = max; },
+    intro: (state) => { Object.assign(intro, state); },
+    visible: (v) => {
+      if (v === running) return;
+      running = v;
+      if (v) { last = performance.now(); handle = raf(frame); } else cancelRaf(handle);
+    },
     pulse: () => galaxy.pulse(),
     dispose: () => {
-      running = false; cancelAnimationFrame(raf);
-      removeEventListener("pointermove", onMove); removeEventListener("resize", resize); document.removeEventListener("visibilitychange", onVisibility);
-      renderer.dispose(); rt?.dispose();
+      disposed = true; running = false; cancelRaf(handle);
+      galaxy.points.geometry.dispose(); galaxy.material.dispose();
+      hudTex?.dispose(); hudMat?.dispose(); rt?.dispose(); room.environment?.dispose();
+      renderer.dispose();
     },
   };
 }

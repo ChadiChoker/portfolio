@@ -34,3 +34,26 @@ describe("introPose", () => {
     expect(introPose(firstDive).lidOpen).toBe(1);
   });
 });
+
+import { introLight } from "@/three/choreography";
+
+describe("introLight", () => {
+  const vh = 800;
+  it("is dark through the intro, floods at the dive, then settles to nothing", () => {
+    expect(introLight(0, 0, vh).flash).toBe(0);
+    expect(introLight(0.5, 0, vh).flash).toBe(0);
+    expect(introLight(0.95, 0, vh).flash).toBeGreaterThan(0.8);
+    expect(introLight(1, 3 * vh, vh).flash).toBeLessThan(0.01);
+  });
+  it("is continuous across the intro → page switch (no jump at progress 1)", () => {
+    const end = introLight(1, 0, vh).flash;
+    const justAfter = introLight(1, 1, vh).flash;
+    expect(Math.abs(end - justAfter)).toBeLessThan(0.01);
+    expect(end).toBeGreaterThan(0.2); // the afterglow carries over
+  });
+  it("only decreases once past the peak", () => {
+    let prev = introLight(0.95, 0, vh).flash;
+    for (let p = 0.96; p <= 1; p += 0.01) { const f = introLight(p, 0, vh).flash; expect(f).toBeLessThanOrEqual(prev + 1e-9); prev = f; }
+    for (let a = 0; a < 3 * vh; a += 50) { const f = introLight(1, a, vh).flash; expect(f).toBeLessThanOrEqual(prev + 1e-9); prev = f; }
+  });
+});
