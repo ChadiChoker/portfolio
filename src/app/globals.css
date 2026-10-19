@@ -119,3 +119,15 @@ html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); po
 .chip { border-radius: 999px; padding: .2rem .6rem; font-size: 11px; color: rgba(230,237,243,.82); background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.07); }
 .accent-emerald { --accent: #10b981; } .accent-cyan { --accent: #22d3ee; } .accent-violet { --accent: #8b5cf6; } .accent-fuchsia { --accent: #e879f9; }
 @media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
+
+/* ---- constellation links between cards ---- */
+.constellation-pulse { stroke-dasharray: 22 100; stroke-dashoffset: 122; animation: link-flow 3.4s linear infinite; }
+@keyframes link-flow { to { stroke-dashoffset: 0; } }
+.constellation-node { animation: node-twinkle 3.6s ease-in-out infinite; }
+@keyframes node-twinkle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .constellation-pulse { display: none; } .constellation-node { animation: none; } }
+
+/* the AI console is a space-glass card too, with a steady emerald aura and no hover lift */
+.console-glass { box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 0 70px -24px #10b981; }
+.console-glass:hover { transform: none; }
+.console-glass::before { opacity: .8; }

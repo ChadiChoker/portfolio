@@ -22,7 +22,7 @@ type Props = {
 export function ConsoleFrame({ offline, empty, children, input, onInput, onAsk, onWake, sendDisabled, inputDisabled, inputRef, scrollerRef }: Props) {
   return (
     <div onPointerEnter={onWake} onTouchStart={onWake}
-      className="rounded-xl border border-accent/30 bg-panel/90 shadow-[0_0_60px_-20px_#10b981] backdrop-blur">
+      className="card accent-emerald console-glass">
       <div className="flex items-center gap-2 border-b border-border px-4 py-2 font-mono text-[11px] text-muted">
         <span className={`size-2 rounded-full ${offline ? "bg-amber-400" : "animate-pulse bg-accent"}`} />
         chadi-ai {offline ? "· offline mode" : "· online"}

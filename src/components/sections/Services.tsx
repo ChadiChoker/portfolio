@@ -1,5 +1,6 @@
 import { services } from "@/content/services";
 import { Reveal } from "@/components/Reveal";
+import { Constellation } from "@/components/Constellation";
 import { Icons } from "@/components/icons";
 
 const look = {
@@ -14,7 +15,7 @@ export function Services() {
     <section id="services" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 md:py-20">
       <h2 className="font-mono text-sm text-accent">/services</h2>
       <p className="mt-2 text-2xl font-bold sm:text-3xl">What I can build for you</p>
-      <div className="mt-10 grid gap-4 md:grid-cols-2">
+      <Constellation className="mt-10 grid gap-6 md:grid-cols-2 md:gap-8">
         {services.map((s, i) => {
           const l = look[s.id as keyof typeof look];
           return (
@@ -36,7 +37,7 @@ export function Services() {
             </Reveal>
           );
         })}
-      </div>
+      </Constellation>
     </section>
   );
 }
