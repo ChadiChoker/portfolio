@@ -24,7 +24,7 @@ export function World() {
         // no WebGL: the CSS fallback stays
       }
     });
-    // Let Intro (rendered earlier in the tree) decide its mode first, then load after first paint.
+    // Load after first paint, when the main thread is idle. Order relative to Intro does not matter.
     const idle = (cb: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(cb, { timeout: 1500 }) : setTimeout(cb, 300));
     const id = idle(start) as number;
 

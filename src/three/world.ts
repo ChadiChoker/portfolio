@@ -51,7 +51,9 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
   const hudCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
   const later = (cb: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(cb, { timeout: 800 }) : setTimeout(cb, 50));
-  if (introStore.mode === "play") later(() => {
+  // Loaded the first time the intro asks for it, so World and Intro can start in any order.
+  let introRequested = false;
+  const loadIntro = () => later(() => {
     room.environment = studioEnvironment(renderer);
     room.add(new THREE.AmbientLight(0xffffff, 0.1));
     const light = (color: number, k: number, x: number, y: number, z: number) => { const l = new THREE.DirectionalLight(color, k); l.position.set(x, y, z); room.add(l); };
@@ -99,6 +101,7 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
   function frame(now: number) {
     const dt = Math.min((now - last) / 1000, 0.05); last = now;
     const t = now / 1000;
+    if (introStore.mode === "play" && !introRequested) { introRequested = true; loadIntro(); }
     smooth += (introStore.progress - smooth) * Math.min(1, dt * 4); // damped follow: flicks become one glide
     const intro = introStore.mode === "play" && rig !== null && smooth < 0.999;
     const pose = introPose(smooth);
