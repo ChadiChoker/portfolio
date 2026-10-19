@@ -35,25 +35,24 @@ describe("introPose", () => {
   });
 });
 
-import { introLight } from "@/three/choreography";
+import { sceneBrightness, BG_BRIGHTNESS } from "@/three/choreography";
 
-describe("introLight", () => {
+describe("sceneBrightness", () => {
   const vh = 800;
-  it("is dark through the intro, floods at the dive, then settles to nothing", () => {
-    expect(introLight(0, 0, vh).flash).toBe(0);
-    expect(introLight(0.5, 0, vh).flash).toBe(0);
-    expect(introLight(0.95, 0, vh).flash).toBeGreaterThan(0.8);
-    expect(introLight(1, 3 * vh, vh).flash).toBeLessThan(0.01);
+  it("matches the display (full brightness) through the intro and at the hand-off", () => {
+    for (const p of [0, 0.5, 0.9, 1]) expect(sceneBrightness(p, 0, vh)).toBe(1);
   });
-  it("is continuous across the intro → page switch (no jump at progress 1)", () => {
-    const end = introLight(1, 0, vh).flash;
-    const justAfter = introLight(1, 1, vh).flash;
-    expect(Math.abs(end - justAfter)).toBeLessThan(0.01);
-    expect(end).toBeGreaterThan(0.2); // the afterglow carries over
+  it("never brightens beyond the display: no flash", () => {
+    for (let a = 0; a <= 3 * vh; a += 40) expect(sceneBrightness(1, a, vh)).toBeLessThanOrEqual(1);
   });
-  it("only decreases once past the peak", () => {
-    let prev = introLight(0.95, 0, vh).flash;
-    for (let p = 0.96; p <= 1; p += 0.01) { const f = introLight(p, 0, vh).flash; expect(f).toBeLessThanOrEqual(prev + 1e-9); prev = f; }
-    for (let a = 0; a < 3 * vh; a += 50) { const f = introLight(1, a, vh).flash; expect(f).toBeLessThanOrEqual(prev + 1e-9); prev = f; }
+  it("dims gradually over a long scroll, not like a switch", () => {
+    // no single 40px step changes brightness by more than 3%
+    let prev = sceneBrightness(1, 0, vh);
+    for (let a = 40; a <= 2 * vh; a += 40) { const b = sceneBrightness(1, a, vh); expect(prev - b).toBeLessThan(0.03); expect(b).toBeLessThanOrEqual(prev); prev = b; }
+    expect(sceneBrightness(1, 0.5 * vh, vh)).toBeGreaterThan(BG_BRIGHTNESS + 0.1); // still noticeably bright halfway
+  });
+  it("settles at the background level and stays there", () => {
+    expect(sceneBrightness(1, 1.5 * vh, vh)).toBeCloseTo(BG_BRIGHTNESS, 5);
+    expect(sceneBrightness(1, 10 * vh, vh)).toBeCloseTo(BG_BRIGHTNESS, 5);
   });
 });

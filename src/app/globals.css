@@ -36,7 +36,7 @@ body { font-family: var(--font-sans); min-height: 100dvh; }
   background:
     radial-gradient(60% 50% at 50% 40%, #8b5cf622, transparent 70%),
     radial-gradient(40% 40% at 60% 55%, #22d3ee18, transparent 70%),
-    #020306;
+    #000;
 }
 .world-canvas { opacity: 0; transition: opacity 1s ease; }
 .world-canvas[data-live] { opacity: 1; }
@@ -45,14 +45,6 @@ body { font-family: var(--font-sans); min-height: 100dvh; }
 .intro-hint { opacity: calc(1 - var(--p, 0) * 10); }
 .intro-skip { opacity: calc((0.8 - var(--p, 0)) * 6); transition: opacity .3s; }
 .site-nav { transition: opacity .5s ease, transform .5s ease; }
-/* light flood at the hand-off (opacity driven by World from the shared light curve) */
-.light-wash {
-  background:
-    radial-gradient(50% 45% at 50% 45%, rgba(236, 255, 246, 0.3), transparent 70%),
-    radial-gradient(80% 70% at 50% 50%, rgba(16, 185, 129, 0.42), transparent 75%);
-  mix-blend-mode: screen;
-  will-change: opacity;
-}
 /* the hero rises in with the light instead of already being there */
 .hero-content { transition: opacity 1s ease .15s, transform 1.2s cubic-bezier(.2,.7,.2,1) .15s, filter 1s ease .15s; }
 html[data-intro="play"] .hero-content { opacity: 0; transform: translateY(28px) scale(.98); filter: blur(6px); }

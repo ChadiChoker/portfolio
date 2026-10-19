@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { createGalaxy } from "./galaxy";
-import { introPose, introLight } from "./choreography";
+import { introPose, sceneBrightness, BG_BRIGHTNESS } from "./choreography";
 import { drawScreenHud } from "./screen-hud";
 
 // One full-screen canvas behind the page. While the intro plays it renders the MacBook, with the
@@ -15,7 +15,6 @@ const MODEL_URL = "/models/macbook.glb";
 const FIT_SIZE = 4.2;
 const CAM_HOME = new THREE.Vector3(0, 0, 10);
 const DEVICE_WIDTH = FIT_SIZE * 1.15; // laptop width plus breathing room
-const BG_OPACITY = 0.6; // galaxy brightness behind page content
 
 type Rig = {
   pivot: THREE.Object3D; screen: THREE.Mesh; screenMat: THREE.MeshBasicMaterial;
@@ -58,7 +57,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
   const galaxy = createGalaxy(mobile ? 6000 : 16000);
   galaxy.material.uniforms.uPixelRatio.value = dpr;
   const space = new THREE.Scene();
-  space.background = new THREE.Color(0x020306);
+  space.background = new THREE.Color(0x000000); // one black for every layer, so the hand-off never steps
   space.add(galaxy.points);
   const spaceCam = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
   spaceCam.position.set(0, 2.6, 5.2);
@@ -115,7 +114,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
   // ---- loop ----
   const sBox = new THREE.Box3(), sCenter = new THREE.Vector3(), sSize = new THREE.Vector3();
   const camDive = new THREE.Vector3(), look = new THREE.Vector3(), origin = new THREE.Vector3();
-  let smooth = 1, handle = 0, last = performance.now(), running = true;
+  let smooth = 1, brightness = BG_BRIGHTNESS, handle = 0, last = performance.now(), running = true;
 
   function frame(now: number) {
     if (!running) return;
@@ -126,10 +125,13 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
     const t = now / 1000;
     if (intro.mode === "play" && !introRequested) { introRequested = true; later(() => { try { setupIntro(); } catch { fail(); } }); }
     smooth += (intro.progress - smooth) * Math.min(1, dt * 4); // damped follow: flicks become one glide
+    if (Math.abs(intro.progress - smooth) < 1e-3) smooth = intro.progress; // settle exactly, or 'past the intro' never triggers
     const playing = intro.mode === "play" && rig !== null && smooth < 0.999;
     const pose = introPose(smooth);
     const after = Math.max(0, view.scrollY - intro.end);
-    galaxy.material.uniforms.uFlash.value = intro.mode === "play" ? introLight(smooth, after, view.height).flash : 0;
+    // eased toward the scroll-driven target, so even a fast flick dims like a fade, never a switch
+    const target = intro.mode === "play" ? sceneBrightness(smooth, after, view.height) : BG_BRIGHTNESS;
+    brightness += (target - brightness) * Math.min(1, dt * 2.5);
     galaxy.update(dt, t);
 
     if (playing && rig && rt && hudScene && hudMat) {
@@ -139,7 +141,9 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
       const th = rig.pivot.rotation.x;
       const bottom = rig.hingeY + rig.relY * Math.cos(th) - rig.relZ * Math.sin(th);
       rig.pivot.position.y = rig.hingeY + Math.max(0, rig.targetY - bottom);
-      rig.screenMat.color.setScalar(pose.power);
+      // true cross-fade at the hand-off: the display's galaxy fades out as the direct one fades in,
+      // so total brightness stays constant (no double-bright frame, no drop at the switch)
+      rig.screenMat.color.setScalar(pose.power * (1 - pose.handoff));
 
       const still = 1 - pose.dive;
       holder.rotation.set(0.32 * (1 - pose.turn) + 0.05 * pose.turn - mouse.y * 0.06 * still, -0.5 * (1 - pose.turn) + mouse.x * 0.12 * still, 0);
@@ -169,8 +173,8 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
         spaceCam.aspect = aspect; spaceCam.updateProjectionMatrix();
       }
       renderer.render(room, camera);
-      if (pose.handoff > 0) { // cross-fade into the direct galaxy
-        galaxy.material.uniforms.uOpacity.value = pose.handoff * BG_OPACITY;
+      if (pose.handoff > 0) { // the direct galaxy, fading in as the display fades out
+        galaxy.material.uniforms.uOpacity.value = pose.handoff * brightness;
         renderer.autoClear = false; renderer.render(galaxy.points, spaceCam); renderer.autoClear = true;
         galaxy.material.uniforms.uOpacity.value = 1;
       }
@@ -181,7 +185,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
       drift.lerp(mouse, Math.min(1, dt * 1.5));
       spaceCam.position.set(Math.sin(t * 0.2) * 0.4 + drift.x * 0.6, 2.6 - depth * 1.6 - drift.y * 0.3, 5.2 - depth * 1.2);
       spaceCam.lookAt(origin);
-      galaxy.material.uniforms.uOpacity.value = BG_OPACITY;
+      galaxy.material.uniforms.uOpacity.value = brightness;
       renderer.render(space, spaceCam);
     }
     handle = raf(frame);

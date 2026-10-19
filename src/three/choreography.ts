@@ -22,20 +22,18 @@ export function introPose(progress: number): IntroPose {
     turn: beat(p, 0.04, 0.48),
     power: beat(p, 0.28, 0.46),
     dive,
-    hud: 1 - clamp01(dive * 1.6),
+    hud: 1 - beat(p, 0.56, 0.86), // the on-screen name fades across most of the dive, not in a blink
     handoff: beat(p, 0.86, 0.97),
   };
 }
 
-// The light change from intro to page: as the camera enters the display the scene floods with light
-// (peak at 0.95), part of it carries over as an afterglow, which then settles away as the visitor
-// scrolls into the content. One continuous curve, shared by the WebGL galaxy and the CSS light wash.
-const AFTERGLOW = 0.35;
-export function introLight(progress: number, pxPastIntro: number, viewportHeight: number) {
-  const p = clamp01(progress);
-  let flash: number;
-  if (p < 0.95) flash = beat(p, 0.84, 0.95);
-  else if (p < 1) flash = 1 - (1 - AFTERGLOW) * beat(p, 0.95, 1);
-  else flash = AFTERGLOW * Math.exp(-Math.max(0, pxPastIntro) / (0.6 * viewportHeight));
-  return { flash };
+// Brightness of the galaxy from intro to page. Through the intro it matches the MacBook display;
+// after the hand-off it dims gently to the background level over 1.5 viewports of scrolling (and
+// brightens back the same way when scrolling up). Never brighter than the display: no flash.
+export const BG_BRIGHTNESS = 0.6;
+const smoothstep = (t: number) => t * t * (3 - 2 * t);
+export function sceneBrightness(progress: number, pxPastIntro: number, viewportHeight: number) {
+  if (clamp01(progress) < 1) return 1;
+  const t = clamp01(Math.max(0, pxPastIntro) / (1.5 * viewportHeight));
+  return 1 - (1 - BG_BRIGHTNESS) * smoothstep(t);
 }
