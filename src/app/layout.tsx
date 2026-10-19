@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { World } from "@/components/World";
+import { Spotlight } from "@/components/Spotlight";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { CommandPaletteLoader } from "@/components/CommandPaletteLoader";
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Footer />
         <CommandPaletteLoader />
         <World />
+        <Spotlight />
       </body>
     </html>
   );

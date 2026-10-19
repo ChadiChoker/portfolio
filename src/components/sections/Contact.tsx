@@ -1,10 +1,10 @@
 import { profile } from "@/content/profile";
 
 const links = [
-  { label: "Email", value: profile.email, href: `mailto:${profile.email}` },
-  { label: "WhatsApp", value: profile.phone, href: profile.whatsapp },
-  { label: "LinkedIn", value: "chadi-choker", href: profile.linkedin },
-  { label: "GitHub", value: "ChadiChoker", href: profile.github },
+  { label: "Email", value: profile.email, href: `mailto:${profile.email}`, accent: "accent-emerald" },
+  { label: "WhatsApp", value: profile.phone, href: profile.whatsapp, accent: "accent-cyan" },
+  { label: "LinkedIn", value: "chadi-choker", href: profile.linkedin, accent: "accent-violet" },
+  { label: "GitHub", value: "ChadiChoker", href: profile.github, accent: "accent-fuchsia" },
 ];
 
 export function Contact() {
@@ -16,8 +16,8 @@ export function Contact() {
       <div className="mt-10 grid gap-3 sm:grid-cols-2">
         {links.map((l) => (
           <a key={l.label} href={l.href} target={l.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer"
-            className="break-all rounded-xl border border-border bg-panel/80 p-5 text-left transition hover:border-accent">
-            <p className="font-mono text-xs text-muted">{l.label}</p>
+            className={`card ${l.accent} break-all p-5 text-left`}>
+            <p className="card-accent font-mono text-xs">{l.label}</p>
             <p className="mt-1 font-semibold">{l.value}</p>
           </a>
         ))}

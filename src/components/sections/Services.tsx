@@ -1,5 +1,13 @@
 import { services } from "@/content/services";
 import { Reveal } from "@/components/Reveal";
+import { Icons } from "@/components/icons";
+
+const look = {
+  "ai-integration": { accent: "accent-emerald", icon: Icons.sparkles },
+  "mcp-automation": { accent: "accent-cyan", icon: Icons.plug },
+  "fullstack-mvp": { accent: "accent-violet", icon: Icons.rocket },
+  "apis-backend": { accent: "accent-fuchsia", icon: Icons.server },
+} as const;
 
 export function Services() {
   return (
@@ -7,17 +15,27 @@ export function Services() {
       <h2 className="font-mono text-sm text-accent">/services</h2>
       <p className="mt-2 text-2xl font-bold sm:text-3xl">What I can build for you</p>
       <div className="mt-10 grid gap-4 md:grid-cols-2">
-        {services.map((s, i) => (
-          <Reveal key={s.id} delay={i * 0.05}>
-            <article className="group h-full rounded-xl border border-border bg-panel/80 p-6 transition hover:-translate-y-0.5 hover:border-accent/50">
-              <p className="font-mono text-xs text-muted">0{i + 1}</p>
-              <h3 className="mt-1 text-xl font-semibold group-hover:text-accent">{s.title}</h3>
-              <p className="mt-2 text-fg/75">{s.pitch}</p>
-              <ul className="mt-4 space-y-1 font-mono text-xs text-muted">{s.deliverables.map((d) => <li key={d}>▸ {d}</li>)}</ul>
-              <p className="mt-4 font-mono text-[11px] text-accent/80">{s.stack.join(" · ")}</p>
-            </article>
-          </Reveal>
-        ))}
+        {services.map((s, i) => {
+          const l = look[s.id as keyof typeof look];
+          return (
+            <Reveal key={s.id} delay={i * 0.05}>
+              <article className={`card ${l.accent} h-full p-6 sm:p-7`}>
+                <div className="flex items-start justify-between">
+                  <span className="card-icon">{l.icon}</span>
+                  <span className="card-accent font-mono text-xs opacity-80">0{i + 1}</span>
+                </div>
+                <h3 className="mt-5 text-xl font-semibold">{s.title}</h3>
+                <p className="mt-2 leading-relaxed text-fg/70">{s.pitch}</p>
+                <ul className="mt-5 grid gap-2 text-sm text-fg/80 sm:grid-cols-2">
+                  {s.deliverables.map((d) => (
+                    <li key={d} className="flex items-start gap-2"><span className="card-accent mt-0.5">{Icons.check}</span>{d}</li>
+                  ))}
+                </ul>
+                <div className="mt-6 flex flex-wrap gap-1.5">{s.stack.map((t) => <span key={t} className="chip">{t}</span>)}</div>
+              </article>
+            </Reveal>
+          );
+        })}
       </div>
     </section>
   );
