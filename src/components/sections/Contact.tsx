@@ -32,16 +32,8 @@ export function Contact() {
           </a>
         ))}
       </div>
-      <a href={profile.cv} download className="cv-download group mx-auto mt-8 flex w-fit items-center gap-3 py-2 pl-2 pr-2 text-left">
-        <span className="cv-file relative grid size-9 shrink-0 place-items-center rounded-lg bg-accent/12 text-accent ring-1 ring-accent/35">
-          {Icons.file}
-          <span className="absolute -bottom-1 -right-1.5 rounded bg-accent px-0.5 font-mono text-[7px] font-bold leading-tight text-black">PDF</span>
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold leading-tight">Download CV</span>
-          <span className="block font-mono text-[10px] text-muted">PDF · {cvSize}</span>
-        </span>
-        <span className="cv-arrow ml-3 grid size-8 shrink-0 place-items-center rounded-full text-black">{Icons.download}</span>
+      <a href={profile.cv} download className="cv-link mt-8 inline-flex items-center gap-2 pb-1 font-mono text-[15px] text-accent">
+        <span className="cv-link-arrow">{Icons.download}</span>Download CV <span className="text-xs text-muted">· PDF {cvSize}</span>
       </a>
     </section>
   );

@@ -147,27 +147,14 @@ html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); po
 }
 .timeline-node svg { width: 14px; height: 14px; }
 
-/* ---- CV download card ---- */
-.cv-download {
-  position: relative; isolation: isolate; border-radius: 999px;
-  background:
-    radial-gradient(80% 120% at 0% 50%, rgba(16,185,129,.14), transparent 60%),
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01)), rgba(5,7,12,.6);
-  box-shadow: 0 0 50px -22px #10b981;
-  transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease;
+/* ---- CV download link: gradient underline sweeps across on hover, arrow drops ---- */
+.cv-link { position: relative; }
+.cv-link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; border-radius: 2px;
+  background: linear-gradient(90deg, #10b981, #22d3ee, #8b5cf6);
+  transform-origin: left; transform: scaleX(.35); transition: transform .4s cubic-bezier(.2,.7,.2,1);
 }
-.cv-download::before { /* gradient border */
-  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: -1;
-  background: linear-gradient(110deg, #10b981, #22d3ee 55%, #8b5cf6);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
-  opacity: .7; transition: opacity .3s ease;
-}
-.cv-download:hover { transform: translateY(-2px); box-shadow: 0 0 70px -18px #10b981; }
-.cv-download:hover::before { opacity: 1; }
-.cv-file svg { width: 16px; height: 16px; }
-.cv-arrow svg { width: 14px; height: 14px; }
-.cv-arrow { background: linear-gradient(135deg, #10b981, #22d3ee); box-shadow: 0 0 22px -4px #10b981; }
-.cv-download:hover .cv-arrow svg { animation: cv-drop .9s ease-in-out infinite; }
+.cv-link:hover::after, .cv-link:focus-visible::after { transform: scaleX(1); }
+.cv-link:hover .cv-link-arrow svg { animation: cv-drop .9s ease-in-out infinite; }
 @keyframes cv-drop { 0%, 100% { transform: translateY(-1px); } 50% { transform: translateY(3px); } }
-@media (prefers-reduced-motion: reduce) { .cv-download:hover { transform: none; } .cv-download:hover .cv-arrow svg { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .cv-link::after { transition: none; } .cv-link:hover .cv-link-arrow svg { animation: none; } }
