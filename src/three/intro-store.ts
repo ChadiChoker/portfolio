@@ -3,6 +3,7 @@
 export const introStore = {
   mode: "none" as "none" | "play",
   progress: 1,
+  end: 0, // scrollY at which the intro has fully handed off to the page
   ready: false,
   failed: false,
 };

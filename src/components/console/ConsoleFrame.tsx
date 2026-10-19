@@ -47,7 +47,7 @@ export function ConsoleFrame({ offline, empty, children, input, onInput, onAsk, 
         <label htmlFor="agent-input" className="sr-only">Ask Chadi&apos;s AI</label>
         <input
           id="agent-input" ref={inputRef} value={input} onChange={(e) => onInput(e.target.value)} onFocus={onWake} maxLength={MAX_CHARS}
-          disabled={inputDisabled} placeholder="Ask about my work or hiring…" autoComplete="off"
+          disabled={inputDisabled} placeholder="Ask about my work or a project…" autoComplete="off"
           className="min-w-0 flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted/60"
         />
         <button type="submit" disabled={sendDisabled}

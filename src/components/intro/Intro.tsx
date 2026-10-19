@@ -31,13 +31,14 @@ export function Intro() {
     return () => { introStore.mode = "none"; introStore.progress = 1; setPhase("done"); };
   }, []);
 
-  // boot log: advances on a timer, finishes once the model is ready (or gives up after 6s)
+  // boot log: advances on a timer and finishes once the model is ready. If the 3D fails or
+  // isn't ready within 8s, the intro collapses so nobody scrolls through an empty runway.
   useEffect(() => {
     if (state !== "play") return;
     const started = performance.now();
     const id = setInterval(() => {
-      const ready = introStore.ready || performance.now() - started > 6000;
-      if (introStore.failed) { skip(); return; }
+      const ready = introStore.ready;
+      if (introStore.failed || (!ready && performance.now() - started > 8000)) { clearInterval(id); skip(); return; }
       setBoot((b) => (b < BOOT.length - 1 || ready ? Math.min(b + 1, BOOT.length) : b));
       if (ready && performance.now() - started > 1200) { setBooted(true); clearInterval(id); }
     }, 320);
@@ -53,6 +54,7 @@ export function Intro() {
       const r = el.getBoundingClientRect();
       const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
       introStore.progress = p;
+      introStore.end = el.offsetTop + el.offsetHeight - innerHeight;
       el.style.setProperty("--p", String(p));
       if (p > 0.97 && document.documentElement.dataset.intro !== "done") setPhase("done");
       else if (p < 0.9 && document.documentElement.dataset.intro === "done") setPhase("play");
@@ -63,7 +65,7 @@ export function Intro() {
   }, [state]);
 
   function skip() {
-    introStore.mode = "none"; introStore.progress = 1;
+    introStore.mode = "none"; introStore.progress = 1; introStore.end = 0;
     setPhase("done"); setState("off");
     scrollTo({ top: 0 });
   }

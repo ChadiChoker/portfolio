@@ -2,7 +2,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from "ai";
 import { aiTools } from "@/agent/ai-tools";
 import { systemPrompt } from "@/agent/system-prompt";
-import { validateChat } from "@/lib/chat-guard";
+import { validateChat, sanitizeHistory } from "@/lib/chat-guard";
 
 export const maxDuration = 30;
 
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const result = streamText({
     model: anthropic("claude-haiku-5-5"),
     system: systemPrompt,
-    messages: await convertToModelMessages(messages),
+    messages: await convertToModelMessages(sanitizeHistory(messages)),
     tools: aiTools,
     stopWhen: stepCountIs(4),
     maxOutputTokens: 600,

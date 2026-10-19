@@ -163,7 +163,8 @@ Chadi asked for a design "not from this world". He approved the live prototype i
 - `src/components/intro/Intro.tsx`: the 400vh scroll spacer (300vh on mobile) with a sticky overlay holding the boot log, "scroll to open" and "skip intro". It is only on the home page.
 
 **Rules**
-- Reduced motion, no WebGL, or a returning visitor (`localStorage` `intro-seen`) means the intro collapses and the static galaxy background stays.
+- Reduced motion, no WebGL, or data saver means the intro collapses and the static galaxy background stays.
+- *Revised 2026-10-19:* the intro plays on every visit. The returning-visitor skip was removed because it hid the MacBook on reload. If the 3D fails, or isn't ready within 8s, the intro collapses.
 - Nav is hidden during the intro and appears on hand-off. It is always visible when the intro is skipped or when scripting is off.
 - The 3D starts after first paint. The page is fully usable and indexable without it.
 - Mobile: 6k galaxy points (16k on desktop), DPR capped at 1.5, no bloom.

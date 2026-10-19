@@ -29,7 +29,7 @@ Next.js 16 (App Router, Cache Components) · React 19 · TypeScript · Tailwind 
 | `src/three/choreography.ts` | Pure scroll → pose mapping for the intro (lid, turn, power, dive, hand-off). Unit-tested. |
 | `src/three/world.ts` | One fixed WebGL canvas. Renders the rigged MacBook with the galaxy on its display (render target), then the same galaxy as the background. |
 | `src/three/galaxy.ts` | GPU-animated spiral of points. `pulse()` sends a shockwave on every agent tool call. |
-| `src/components/intro/Intro.tsx` | Scroll runway, boot log, skip control. Skipped for returning visitors, reduced motion, data saver and no WebGL. |
+| `src/components/intro/Intro.tsx` | Scroll runway, boot log, skip control. Plays on every visit with a one-tap skip. It's skipped under reduced motion, data saver and no WebGL, and collapses if the 3D fails to load. |
 
 ## Run locally
 

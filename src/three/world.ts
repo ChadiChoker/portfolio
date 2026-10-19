@@ -14,6 +14,7 @@ const MODEL_URL = "/models/macbook.glb";
 const FIT_SIZE = 4.2;
 const CAM_HOME = new THREE.Vector3(0, 0, 10);
 const DEVICE_WIDTH = FIT_SIZE * 1.15; // laptop width plus breathing room
+const BG_OPACITY = 0.6; // galaxy brightness behind page content
 
 type Rig = {
   pivot: THREE.Object3D; screen: THREE.Mesh; screenMat: THREE.MeshBasicMaterial;
@@ -53,7 +54,8 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
   const later = (cb: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(cb, { timeout: 800 }) : setTimeout(cb, 50));
   // Loaded the first time the intro asks for it, so World and Intro can start in any order.
   let introRequested = false;
-  const loadIntro = () => later(() => {
+  const loadIntro = () => later(() => { try { setupIntro(); } catch { introStore.failed = true; } });
+  const setupIntro = () => {
     room.environment = studioEnvironment(renderer);
     room.add(new THREE.AmbientLight(0xffffff, 0.1));
     const light = (color: number, k: number, x: number, y: number, z: number) => { const l = new THREE.DirectionalLight(color, k); l.position.set(x, y, z); room.add(l); };
@@ -70,16 +72,15 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
       const loader = new GLTFLoader();
       loader.setMeshoptDecoder(MeshoptDecoder);
       loader.load(MODEL_URL, (gltf) => {
-        rig = rigModel(gltf.scene, holder, rt!.texture);
-        introStore.ready = true;
+        try { rig = rigModel(gltf.scene, holder, rt!.texture); introStore.ready = true; } catch { introStore.failed = true; }
       }, undefined, () => { introStore.failed = true; });
     });
-  });
+  };
 
   // ---- loop ----
   const sBox = new THREE.Box3(), sCenter = new THREE.Vector3(), sSize = new THREE.Vector3();
   const camDive = new THREE.Vector3(), look = new THREE.Vector3(), origin = new THREE.Vector3();
-  const mouse = new THREE.Vector2();
+  const mouse = new THREE.Vector2(), drift = new THREE.Vector2(); // drift eases toward the mouse, so the hand-off never jumps
   let smooth = introStore.progress, raf = 0, last = performance.now(), running = true;
 
   const onMove = (e: PointerEvent) => mouse.set(e.clientX / innerWidth - 0.5, e.clientY / innerHeight - 0.5);
@@ -99,6 +100,9 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
   resize();
 
   function frame(now: number) {
+    // Phones draw the slow background drift at 30fps (half the battery); the intro always runs at full rate.
+    const background = !(introStore.mode === "play" && smooth < 0.999);
+    if (mobile && background && now - last < 32) { raf = requestAnimationFrame(frame); return; }
     const dt = Math.min((now - last) / 1000, 0.05); last = now;
     const t = now / 1000;
     if (introStore.mode === "play" && !introRequested) { introRequested = true; loadIntro(); }
@@ -108,6 +112,7 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
     galaxy.update(dt, t);
 
     if (intro && rig && rt && hudScene && hudMat) {
+      drift.set(0, 0);
       // lid hinge with seat lift, so the closed lid rests on the keys instead of sinking into them
       rig.pivot.rotation.x = rig.closedX + (rig.openX - rig.closedX) * pose.lidOpen;
       const th = rig.pivot.rotation.x;
@@ -144,16 +149,19 @@ export function createWorld(canvas: HTMLCanvasElement, { mobile }: { mobile: boo
       }
       renderer.render(room, camera);
       if (pose.handoff > 0) { // cross-fade into the direct galaxy
-        galaxy.material.uniforms.uOpacity.value = pose.handoff;
+        galaxy.material.uniforms.uOpacity.value = pose.handoff * BG_OPACITY;
         renderer.autoClear = false; renderer.render(galaxy.points, spaceCam); renderer.autoClear = true;
         galaxy.material.uniforms.uOpacity.value = 1;
       }
     } else {
-      // site background: the galaxy, drifting with scroll for depth, dimmed behind content
-      const depth = Math.min(scrollY / Math.max(1, document.body.scrollHeight - innerHeight), 1);
-      spaceCam.position.set(Math.sin(t * 0.2) * 0.4 + mouse.x * 0.6, 2.6 - depth * 1.6 - mouse.y * 0.3, 5.2 - depth * 1.2);
+      // site background: the galaxy, drifting with scroll for depth, dimmed behind content.
+      // Depth starts at 0 where the intro ends, so the first frame matches the hand-off pose exactly.
+      const after = Math.max(0, scrollY - introStore.end);
+      const depth = Math.min(after / Math.max(1, document.body.scrollHeight - innerHeight - introStore.end), 1);
+      drift.lerp(mouse, Math.min(1, dt * 1.5));
+      spaceCam.position.set(Math.sin(t * 0.2) * 0.4 + drift.x * 0.6, 2.6 - depth * 1.6 - drift.y * 0.3, 5.2 - depth * 1.2);
       spaceCam.lookAt(origin);
-      galaxy.material.uniforms.uOpacity.value = 0.6;
+      galaxy.material.uniforms.uOpacity.value = BG_OPACITY;
       renderer.render(space, spaceCam);
     }
     if (running) raf = requestAnimationFrame(frame);

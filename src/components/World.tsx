@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { introStore } from "@/three/intro-store";
 
 // Fixed WebGL backdrop for every page. three.js is imported only after hydration and first
 // paint, so it never competes with content. The CSS starfield underneath is the fallback when
@@ -21,9 +22,9 @@ export function World() {
         world = createWorld(canvas, { mobile: matchMedia("(max-width: 768px)").matches });
         canvas.dataset.live = "";
       } catch {
-        // no WebGL: the CSS fallback stays
+        introStore.failed = true; // no WebGL: the CSS fallback stays and the intro collapses
       }
-    });
+    }, () => { introStore.failed = true; });
     // Load after first paint, when the main thread is idle. Order relative to Intro does not matter.
     const idle = (cb: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(cb, { timeout: 1500 }) : setTimeout(cb, 300));
     const id = idle(start) as number;
