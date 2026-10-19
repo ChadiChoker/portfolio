@@ -17,6 +17,14 @@ export function Intro() {
   const [boot, setBoot] = useState(1);
   const [booted, setBooted] = useState(false);
 
+  // Only when the 3D can't run (failed or too slow): remove the runway so nobody scrolls through emptiness.
+  const collapse = () => {
+    updateIntro({ mode: "none", progress: 1, end: 0 });
+    setPhase("done"); setState("off");
+    scrollTo({ top: 0 });
+  };
+
+
   useEffect(() => {
     const play = shouldPlayIntro({
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -38,7 +46,7 @@ export function Intro() {
     const started = performance.now();
     const id = setInterval(() => {
       const ready = introStore.ready;
-      if (introStore.failed || (!ready && performance.now() - started > 8000)) { clearInterval(id); skip(); return; }
+      if (introStore.failed || (!ready && performance.now() - started > 8000)) { clearInterval(id); collapse(); return; }
       setBoot((b) => (b < BOOT.length - 1 || ready ? Math.min(b + 1, BOOT.length) : b));
       if (ready && performance.now() - started > 1200) { setBooted(true); clearInterval(id); }
     }, 320);
@@ -54,6 +62,7 @@ export function Intro() {
       const r = el.getBoundingClientRect();
       const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
       updateIntro({ progress: p, end: el.offsetTop + el.offsetHeight - innerHeight });
+      el.toggleAttribute("data-late", p > 0.8); // skip control is gone for real (not just transparent)
       el.style.setProperty("--p", String(p));
       if (p > 0.97 && document.documentElement.dataset.intro !== "done") setPhase("done");
       else if (p < 0.9 && document.documentElement.dataset.intro === "done") setPhase("play");
@@ -63,10 +72,11 @@ export function Intro() {
     return () => removeEventListener("scroll", onScroll);
   }, [state]);
 
+  // Skip is a shortcut, not a removal: jump to where the intro hands off to the page. The intro stays
+  // above, so scrolling back up replays it.
   function skip() {
-    updateIntro({ mode: "none", progress: 1, end: 0 });
-    setPhase("done"); setState("off");
-    scrollTo({ top: 0 });
+    const el = ref.current;
+    if (el) scrollTo({ top: el.offsetTop + el.offsetHeight - innerHeight + 1, behavior: "instant" });
   }
 
   if (state === "off") return null;

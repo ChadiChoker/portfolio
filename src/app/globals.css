@@ -44,6 +44,7 @@ body { font-family: var(--font-sans); min-height: 100dvh; }
 /* ---- intro ---- */
 .intro-hint { opacity: calc(1 - var(--p, 0) * 10); }
 .intro-skip { opacity: calc((0.8 - var(--p, 0)) * 6); transition: opacity .3s; }
+.intro[data-late] .intro-skip { visibility: hidden; pointer-events: none; }
 .site-nav { transition: opacity .5s ease, transform .5s ease; }
 /* the hero rises in with the light instead of already being there */
 .hero-content { transition: opacity 1s ease .15s, transform 1.2s cubic-bezier(.2,.7,.2,1) .15s, filter 1s ease .15s; }
