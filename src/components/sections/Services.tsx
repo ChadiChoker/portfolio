@@ -1,7 +1,7 @@
 import { services } from "@/content/services";
 import { Reveal } from "@/components/Reveal";
 import { Constellation } from "@/components/Constellation";
-import { Icons } from "@/components/icons";
+import { Icons, SectionHeading } from "@/components/icons";
 
 const look = {
   "ai-integration": { accent: "accent-emerald", icon: Icons.sparkles },
@@ -13,8 +13,7 @@ const look = {
 export function Services() {
   return (
     <section id="services" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 md:py-20">
-      <h2 className="font-mono text-sm text-accent">/services</h2>
-      <p className="mt-2 text-2xl font-bold sm:text-3xl">What I can build for you</p>
+      <SectionHeading label="/services" title="What I can build for you" icon={Icons.layers} />
       <Constellation className="mt-10 grid gap-6 md:grid-cols-2 md:gap-8">
         {services.map((s, i) => {
           const l = look[s.id as keyof typeof look];

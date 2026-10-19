@@ -2,7 +2,7 @@ import Link from "next/link";
 import { projects } from "@/content/projects";
 import { Reveal } from "@/components/Reveal";
 import { Constellation } from "@/components/Constellation";
-import { Icons } from "@/components/icons";
+import { Icons, SectionHeading } from "@/components/icons";
 
 // Accent by what the project is: AI work emerald, real-time cyan, backend/API violet.
 const accentFor = (tags: string[]) => (tags.includes("ai") ? "accent-emerald" : tags.includes("realtime") ? "accent-cyan" : "accent-violet");
@@ -10,8 +10,7 @@ const accentFor = (tags: string[]) => (tags.includes("ai") ? "accent-emerald" : 
 export function Projects() {
   return (
     <section id="projects" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 md:py-20">
-      <h2 className="font-mono text-sm text-accent">/projects</h2>
-      <p className="mt-2 text-2xl font-bold sm:text-3xl">Selected work</p>
+      <SectionHeading label="/projects" title="Selected work" icon={Icons.code} />
       <Constellation className="mt-10 grid gap-6 md:grid-cols-6 md:gap-8">
         {projects.map((p, i) => (
           <Reveal key={p.slug} delay={i * 0.05} className={i < 2 ? "md:col-span-3" : "md:col-span-2"}>

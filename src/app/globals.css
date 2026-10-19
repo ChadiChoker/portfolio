@@ -133,3 +133,39 @@ html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); po
 .console-glass { box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 0 70px -24px #10b981; }
 .console-glass:hover { transform: none; }
 .console-glass::before { opacity: .8; }
+
+/* ---- section + timeline icons ---- */
+.section-icon {
+  display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .6rem; color: var(--color-accent);
+  background: color-mix(in oklab, var(--color-accent) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent) 35%, transparent), 0 0 18px -6px var(--color-accent);
+}
+.section-icon svg { width: 16px; height: 16px; }
+.timeline-node {
+  display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 999px; color: var(--color-accent);
+  background: #05080d; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent) 45%, transparent), 0 0 16px -4px var(--color-accent);
+}
+.timeline-node svg { width: 14px; height: 14px; }
+
+/* ---- CV download card ---- */
+.cv-download {
+  position: relative; isolation: isolate; border-radius: 1.25rem;
+  background:
+    radial-gradient(80% 120% at 0% 50%, rgba(16,185,129,.14), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.01)), rgba(5,7,12,.6);
+  box-shadow: 0 0 50px -22px #10b981;
+  transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease;
+}
+.cv-download::before { /* gradient border */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: -1;
+  background: linear-gradient(110deg, #10b981, #22d3ee 55%, #8b5cf6);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
+  opacity: .7; transition: opacity .3s ease;
+}
+.cv-download:hover { transform: translateY(-2px); box-shadow: 0 0 70px -18px #10b981; }
+.cv-download:hover::before { opacity: 1; }
+.cv-arrow { background: linear-gradient(135deg, #10b981, #22d3ee); box-shadow: 0 0 22px -4px #10b981; }
+.cv-download:hover .cv-arrow svg { animation: cv-drop .9s ease-in-out infinite; }
+@keyframes cv-drop { 0%, 100% { transform: translateY(-1px); } 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .cv-download:hover { transform: none; } .cv-download:hover .cv-arrow svg { animation: none; } }
