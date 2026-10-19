@@ -63,6 +63,7 @@ export function Intro() {
       const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
       updateIntro({ progress: p, end: el.offsetTop + el.offsetHeight - innerHeight });
       el.toggleAttribute("data-late", p > 0.8); // skip control is gone for real (not just transparent)
+      el.toggleAttribute("data-deep", p > 0.03); // reloaded past the start (e.g. after a skip): no boot screen
       el.style.setProperty("--p", String(p));
       if (p > 0.97 && document.documentElement.dataset.intro !== "done") setPhase("done");
       else if (p < 0.9 && document.documentElement.dataset.intro === "done") setPhase("play");
@@ -76,7 +77,12 @@ export function Intro() {
   // above, so scrolling back up replays it.
   function skip() {
     const el = ref.current;
-    if (el) scrollTo({ top: el.offsetTop + el.offsetHeight - innerHeight + 1, behavior: "instant" });
+    if (!el) return;
+    // land on the hero (just under the fixed nav), which is past the hand-off point
+    const hero = el.nextElementSibling as HTMLElement | null;
+    const nav = document.querySelector<HTMLElement>(".site-nav")?.offsetHeight ?? 0;
+    const end = el.offsetTop + el.offsetHeight - innerHeight + 1;
+    scrollTo({ top: Math.max(end, (hero?.offsetTop ?? end) - nav), behavior: "instant" });
   }
 
   if (state === "off") return null;
@@ -84,7 +90,7 @@ export function Intro() {
   return (
     <section ref={ref} id="intro" aria-label="Intro" className="intro relative -mt-14 h-[300vh] md:h-[400vh]">
       <div className="sticky top-0 h-dvh">
-        <div className={`absolute inset-0 z-40 flex items-center justify-center bg-black transition-opacity duration-700 ${booted ? "pointer-events-none opacity-0" : ""}`}>
+        <div className={`intro-boot absolute inset-0 z-40 flex items-center justify-center bg-black transition-opacity duration-700 ${booted ? "pointer-events-none opacity-0" : ""}`}>
           <div className="w-[min(340px,86vw)] font-mono text-[13px] leading-7 text-accent">
             <p className="mb-6 font-sans text-6xl font-bold tracking-tight text-fg">chadi<span className="text-accent">.ai</span></p>
             {/* every line is laid out from the start and revealed in place, so nothing shifts */}
@@ -96,7 +102,7 @@ export function Intro() {
         <div aria-hidden className="intro-frame intro-frame-glow"><div className="intro-frame-spin" /></div>
         <div aria-hidden className="intro-frame"><div className="intro-frame-spin" /></div>
         <p className="intro-hint absolute bottom-8 left-1/2 -translate-x-1/2 font-mono text-[11px] tracking-[0.3em] text-muted">SCROLL TO OPEN</p>
-        <button onClick={skip} className="intro-skip absolute bottom-7 right-5 z-50 rounded-full border border-border bg-black/40 px-3 py-1.5 font-mono text-[11px] text-muted backdrop-blur hover:border-accent hover:text-accent">
+        <button onClick={skip} className={`intro-skip ${booted ? "" : "hidden"} absolute bottom-7 right-5 z-50 rounded-full border border-border bg-black/40 px-3 py-1.5 font-mono text-[11px] text-muted backdrop-blur hover:border-accent hover:text-accent`}>
           skip intro ↓
         </button>
       </div>
