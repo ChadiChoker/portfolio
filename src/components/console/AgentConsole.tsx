@@ -108,7 +108,7 @@ export function AgentConsole() {
         <label htmlFor="agent-input" className="sr-only">Ask Chadi&apos;s AI</label>
         <input
           id="agent-input" value={input} onChange={(e) => setInput(e.target.value)} maxLength={MAX_CHARS}
-          disabled={limitReached} placeholder="Ask about projects, AI work, or hiring…" autoComplete="off"
+          disabled={limitReached} placeholder="Ask about my work or hiring…" autoComplete="off"
           className="min-w-0 flex-1 bg-transparent font-mono text-sm outline-none placeholder:text-muted/60"
         />
         <button type="submit" disabled={!input.trim() || busy || limitReached}
