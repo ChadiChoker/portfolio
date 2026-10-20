@@ -130,6 +130,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
   // ---- loop ----
   const sBox = new THREE.Box3(), sCenter = new THREE.Vector3(), sSize = new THREE.Vector3();
   const camDive = new THREE.Vector3(), look = new THREE.Vector3(), origin = new THREE.Vector3();
+  const win = new THREE.Vector4(), rect = new THREE.Vector4(); // view-offset windows: x, y, width, height (CSS px)
   let smooth = 1, brightness = BG_BRIGHTNESS, handle = 0, last = performance.now(), running = true;
 
   function frame(now: number) {
@@ -140,7 +141,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
     const dt = Math.min((now - last) / 1000, 0.05); last = now;
     const t = now / 1000;
     if (intro.mode === "play" && !introRequested) { introRequested = true; later(() => { try { setupIntro(); } catch { fail(); } }); }
-    smooth += (intro.progress - smooth) * Math.min(1, dt * 4); // damped follow: flicks become one glide
+    smooth += (intro.progress - smooth) * Math.min(1, dt * 7); // damped follow: tracks the finger closely, flicks still glide
     if (Math.abs(intro.progress - smooth) < 1e-3) smooth = intro.progress; // settle exactly, or 'past the intro' never triggers
     const playing = intro.mode === "play" && rig !== null && smooth < 0.999;
     const pose = introPose(smooth);
@@ -162,7 +163,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
       rig.screenMat.color.setScalar(pose.power * (1 - pose.handoff));
 
       const still = 1 - pose.dive;
-      holder.rotation.set(0.32 * (1 - pose.turn) + 0.05 * pose.turn - mouse.y * 0.06 * still, -0.5 * (1 - pose.turn) + mouse.x * 0.12 * still, 0);
+      holder.rotation.set(0.32 * (1 - pose.turn) + 0.05 * pose.turn * still - mouse.y * 0.06 * still, -0.5 * (1 - pose.turn) + mouse.x * 0.12 * still, 0);
       holder.scale.setScalar(0.9 + 0.1 * pose.turn);
       holder.position.set((camera.aspect >= 1 ? 0.35 : 0.6) * (1 - pose.turn), 0.25 * (1 - pose.turn) + 0.05 * pose.turn, 0);
 
@@ -182,20 +183,33 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
       hudMat.opacity = pose.hud;
       spaceCam.position.set(Math.sin(t * 0.2) * 0.4, 2.6, 5.2); spaceCam.lookAt(origin);
       if (pose.power > 0) {
-        const aspect = spaceCam.aspect; spaceCam.aspect = rt.width / rt.height; spaceCam.updateProjectionMatrix();
-        // points are sized in pixels: scale them with the texture so the galaxy keeps its look at any resolution
-        galaxy.material.uniforms.uPixelRatio.value = dpr * (rt.width / 2048);
+        // The display is a window onto the page's background galaxy: it renders the same camera, cropped
+        // (setViewOffset) to a region of the viewport. On the desk that region is the whole frame at the
+        // display's shape; through the dive it converges to exactly where the screen sits on the viewport,
+        // so when the screen fills the view its pixels match the background and the swap is invisible.
+        const W = view.width, Hh = view.height, A = rt.width / rt.height;
+        const w0 = Math.min(W, Hh * A), h0 = w0 / A;
+        win.set((W - w0) / 2, (Hh - h0) / 2, w0, h0);
+        if (pose.dive > 0) {
+          camera.updateMatrixWorld();
+          projectRect(rig.screen, camera, W, Hh, rect);
+          const k = pose.dive * pose.dive * (3 - 2 * pose.dive);
+          win.lerp(rect, k);
+        }
+        spaceCam.setViewOffset(W, Hh, win.x, win.y, win.z, win.w);
+        // points are sized in pixels: scale so they land at the same on-screen size as the background
+        galaxy.material.uniforms.uPixelRatio.value = rt.width / win.z;
+        galaxy.material.uniforms.uOpacity.value = brightness;
         renderer.setRenderTarget(rt); renderer.render(space, spaceCam);
         galaxy.material.uniforms.uPixelRatio.value = dpr;
         renderer.autoClear = false; renderer.render(hudScene, hudCam); renderer.autoClear = true;
         renderer.setRenderTarget(null);
-        spaceCam.aspect = aspect; spaceCam.updateProjectionMatrix();
+        spaceCam.clearViewOffset();
       }
       renderer.render(room, camera);
-      if (pose.handoff > 0) { // the direct galaxy, fading in as the display fades out
+      if (pose.handoff > 0) { // the direct galaxy, fading in as the (identical) display fades out
         galaxy.material.uniforms.uOpacity.value = pose.handoff * brightness;
         renderer.autoClear = false; renderer.render(galaxy.points, spaceCam); renderer.autoClear = true;
-        galaxy.material.uniforms.uOpacity.value = 1;
       }
     } else {
       // site background: the galaxy, drifting with scroll for depth, dimmed behind content.
@@ -278,3 +292,19 @@ function studioEnvironment(renderer: THREE.WebGLRenderer) {
   pmrem.dispose();
   return tex;
 }
+
+// Screen-space bounding rect (x, y, width, height in CSS px, y from the top) of a mesh as seen by camera.
+const _corner = new THREE.Vector3();
+function projectRect(mesh: THREE.Mesh, camera: THREE.Camera, W: number, H: number, out: THREE.Vector4) {
+  const g = mesh.geometry;
+  if (!g.boundingBox) g.computeBoundingBox();
+  const b = g.boundingBox!;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (let i = 0; i < 8; i++) {
+    _corner.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).applyMatrix4(mesh.matrixWorld).project(camera);
+    const x = (_corner.x + 1) / 2 * W, y = (1 - _corner.y) / 2 * H;
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  out.set(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0));
+}
+
