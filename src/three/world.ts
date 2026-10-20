@@ -132,20 +132,27 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
   const camDive = new THREE.Vector3(), look = new THREE.Vector3(), origin = new THREE.Vector3();
   const win = new THREE.Vector4(), rect = new THREE.Vector4(); // view-offset windows: x, y, width, height (CSS px)
   let smooth = 1, brightness = BG_BRIGHTNESS, handle = 0, last = performance.now(), running = true;
+  let smoothY = -1; // one smoothed scroll position drives both the intro and the background, so the hand-over can't snap
 
   function frame(now: number) {
     if (!running) return;
-    // Phones draw the slow background drift at 30fps (half the battery); the intro always runs at full rate.
+    // Phones draw the background at 30fps (half the battery) once everything has settled; the intro and
+    // any glide (scroll, brightness) run at full rate so the change of rate is never visible.
+    const settled = Math.abs(view.scrollY - smoothY) < 0.5 && Math.abs(brightness - BG_BRIGHTNESS) < 0.002;
     const background = !(intro.mode === "play" && smooth < 0.999);
-    if (mobile && background && now - last < 32) { handle = raf(frame); return; }
+    if (mobile && background && settled && now - last < 32) { handle = raf(frame); return; }
     const dt = Math.min((now - last) / 1000, 0.05); last = now;
     const t = now / 1000;
     if (intro.mode === "play" && !introRequested) { introRequested = true; later(() => { try { setupIntro(); } catch { fail(); } }); }
-    smooth += (intro.progress - smooth) * Math.min(1, dt * 7); // damped follow: tracks the finger closely, flicks still glide
+    const follow = Math.min(1, dt * 7); // damped follow: tracks the finger closely, flicks still glide
+    if (smoothY < 0) smoothY = view.scrollY;
+    smoothY += (view.scrollY - smoothY) * follow;
+    if (Math.abs(view.scrollY - smoothY) < 0.5) smoothY = view.scrollY;
+    smooth += (intro.progress - smooth) * follow;
     if (Math.abs(intro.progress - smooth) < 1e-3) smooth = intro.progress; // settle exactly, or 'past the intro' never triggers
     const playing = intro.mode === "play" && rig !== null && smooth < 0.999;
     const pose = introPose(smooth);
-    const after = Math.max(0, view.scrollY - intro.end);
+    const after = Math.max(0, smoothY - intro.end);
     // eased toward the scroll-driven target, so even a fast flick dims like a fade, never a switch
     const target = intro.mode === "play" ? sceneBrightness(smooth, after, view.height) : BG_BRIGHTNESS;
     brightness += (target - brightness) * Math.min(1, dt * 2.5);
@@ -214,7 +221,8 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
     } else {
       // site background: the galaxy, drifting with scroll for depth, dimmed behind content.
       // Depth starts at 0 where the intro ends, so the first frame matches the hand-off pose exactly.
-      const depth = Math.min(after / Math.max(1, view.scrollMax - intro.end), 1);
+      const d = Math.min(after / Math.max(1, view.scrollMax - intro.end), 1);
+      const depth = d * d * (3 - 2 * d); // eased: starts from rest, matching the still camera at the end of the intro
       drift.lerp(mouse, Math.min(1, dt * 1.5));
       spaceCam.position.set(Math.sin(t * 0.2) * 0.4 + drift.x * 0.6, 2.6 - depth * 1.6 - drift.y * 0.3, 5.2 - depth * 1.2);
       spaceCam.lookAt(origin);

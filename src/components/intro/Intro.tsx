@@ -15,6 +15,7 @@ const hasWebGL = () => {
   } catch { return false; }
 };
 const setPhase = (phase: "play" | "done") => { document.documentElement.dataset.intro = phase; };
+const setReveal = (p: number) => document.documentElement.style.setProperty("--intro-p", String(p));
 
 // Scroll runway for the MacBook intro. The 3D lives in <World/>; this section owns the scroll
 // progress, the boot log, and the skip control. Hidden by CSS without JS or under reduced motion.
@@ -27,7 +28,7 @@ export function Intro() {
   // Only when the 3D can't run (failed or too slow): remove the runway so nobody scrolls through emptiness.
   const collapse = () => {
     updateIntro({ mode: "none", progress: 1, end: 0 });
-    setPhase("done"); setState("off");
+    setPhase("done"); setState("off"); setReveal(1);
     // keep the visitor where they are: measure now, re-scroll once the runway is gone from the layout
     const el = ref.current;
     if (!el) return;
@@ -44,11 +45,11 @@ export function Intro() {
       saveData: !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
     });
     updateIntro({ mode: play ? "play" : "none", progress: play ? 0 : 1 });
-    setPhase(play ? "play" : "done");
+    setPhase(play ? "play" : "done"); setReveal(play ? 0 : 1);
     // Browser-only facts (WebGL, media queries) can only be read after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState(play ? "play" : "off");
-    return () => { updateIntro({ mode: "none", progress: 1, end: 0 }); setPhase("done"); };
+    return () => { updateIntro({ mode: "none", progress: 1, end: 0 }); setPhase("done"); setReveal(1); };
   }, []);
 
   // boot log: advances on a timer and finishes once the model is ready. If the 3D fails or
@@ -81,6 +82,7 @@ export function Intro() {
       el.toggleAttribute("data-late", p > 0.8); // skip control is gone for real (not just transparent)
       el.toggleAttribute("data-deep", p > 0.03); // reloaded past the start (e.g. after a skip): no boot screen
       el.style.setProperty("--p", String(p));
+      setReveal(p); // hero + nav reveal follow the scroll
       if (p > 0.97 && document.documentElement.dataset.intro !== "done") setPhase("done");
       else if (p < 0.9 && document.documentElement.dataset.intro === "done") setPhase("play");
     };

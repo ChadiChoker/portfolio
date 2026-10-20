@@ -46,11 +46,14 @@ body { font-family: var(--font-sans); min-height: 100dvh; }
 .intro-skip { opacity: calc((0.8 - var(--p, 0)) * 6); transition: opacity .3s; }
 .intro[data-late] .intro-skip { visibility: hidden; pointer-events: none; }
 .intro[data-deep] .intro-boot { opacity: 0; pointer-events: none; transition: none; }
-.site-nav { transition: opacity .5s ease, transform .5s ease; }
+.site-nav { will-change: opacity, transform; }
 /* the hero rises in with the light instead of already being there */
-.hero-content { transition: opacity 1s ease .15s, transform 1.2s cubic-bezier(.2,.7,.2,1) .15s, filter 1s ease .15s; }
-html[data-intro="play"] .hero-content { opacity: 0; transform: translateY(28px) scale(.98); filter: blur(6px); }
-html[data-intro="play"] .site-nav { opacity: 0; transform: translateY(-100%); pointer-events: none; }
+/* The hero and nav rise in with the scroll itself over the last stretch of the intro (88%→100%):
+   no timer and no blur, so they can't pop or lag, and scrolling back reverses them exactly. */
+html[data-intro] { --reveal: clamp(0, (var(--intro-p, 1) - 0.88) * 8.4, 1); }
+html[data-intro] .hero-content { opacity: var(--reveal); transform: translateY(calc((1 - var(--reveal)) * 32px)); will-change: opacity, transform; }
+html[data-intro] .site-nav { opacity: var(--reveal); transform: translateY(calc((var(--reveal) - 1) * 100%)); }
+html[data-intro="play"] .site-nav { pointer-events: none; }
 @media (scripting: none), (prefers-reduced-motion: reduce) { .intro { display: none; } }
 
 /* Moving border: a conic "comet" rotates behind a ring-shaped mask. Only transform animates, so it
