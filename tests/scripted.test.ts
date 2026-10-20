@@ -36,3 +36,12 @@ describe("scriptedAnswer", () => {
     expect(scriptedAnswer("does chadi like cats?").tool).toBeNull();
   });
 });
+
+describe("scriptedAnswer: project names are whole words", () => {
+  it("'vehicle tracking app' is a services question, not the Vehicle AI case study", () => {
+    expect(scriptedAnswer("Can he build a vehicle tracking app?").tool?.name).toBe("get_services");
+  });
+  it("still finds a project named in full", () => {
+    expect(scriptedAnswer("tell me about vehicle ai").tool).toEqual({ name: "get_project", args: { slug: "vehicle-ai" } });
+  });
+});

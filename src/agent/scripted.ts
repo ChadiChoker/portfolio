@@ -12,7 +12,8 @@ const has = (q: string, words: string[]) => words.some((w) => new RegExp(`\\b${w
 export function scriptedAnswer(question: string): ScriptedReply {
   const q = question.toLowerCase();
 
-  const named = projects.find((p) => q.includes(p.slug.replace("-", " ")) || q.includes(p.title.toLowerCase().split(/[:\s]/)[0]));
+  // a project counts as named only by its full short name ("vehicle ai", "liu meet", "sadie"…), as whole words
+  const named = projects.find((p) => has(q, [p.slug.replace(/-/g, " ")]));
   if (named) {
     const p = getProject(named.slug)!;
     return {

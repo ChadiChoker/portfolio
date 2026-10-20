@@ -6,7 +6,14 @@ import { shouldPlayIntro } from "@/three/intro-gate";
 const BOOT = ["> initializing chadi.ai", "> loading neural weights ........ ok", "> mounting latent space .......... ok", "> agent online"];
 
 // The 3D renders in a worker, so it needs WebGL2 and OffscreenCanvas.
-const hasWebGL = () => { try { return "transferControlToOffscreen" in HTMLCanvasElement.prototype && !!document.createElement("canvas").getContext("webgl2"); } catch { return false; } };
+const hasWebGL = () => {
+  try {
+    if (!("transferControlToOffscreen" in HTMLCanvasElement.prototype)) return false;
+    const gl = document.createElement("canvas").getContext("webgl2");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext(); // release the probe (browsers cap live contexts)
+    return !!gl;
+  } catch { return false; }
+};
 const setPhase = (phase: "play" | "done") => { document.documentElement.dataset.intro = phase; };
 
 // Scroll runway for the MacBook intro. The 3D lives in <World/>; this section owns the scroll
@@ -21,7 +28,12 @@ export function Intro() {
   const collapse = () => {
     updateIntro({ mode: "none", progress: 1, end: 0 });
     setPhase("done"); setState("off");
-    scrollTo({ top: 0 });
+    // keep the visitor where they are: measure now, re-scroll once the runway is gone from the layout
+    const el = ref.current;
+    if (!el) return;
+    const runway = el.offsetHeight + parseFloat(getComputedStyle(el).marginTop || "0");
+    const target = Math.max(0, scrollY > el.offsetTop + runway ? scrollY - runway : Math.min(scrollY, el.offsetTop));
+    requestAnimationFrame(() => scrollTo(0, target));
   };
 
 
@@ -43,12 +55,16 @@ export function Intro() {
   // isn't ready within 8s, the intro collapses so nobody scrolls through an empty runway.
   useEffect(() => {
     if (state !== "play") return;
-    const started = performance.now();
+    // time-out counts only while the tab is visible: a link opened in a background tab must not lose its intro
+    let visibleMs = 0, last = performance.now();
     const id = setInterval(() => {
       const ready = introStore.ready;
-      if (introStore.failed || (!ready && performance.now() - started > 8000)) { clearInterval(id); collapse(); return; }
+      const now = performance.now();
+      if (!document.hidden) visibleMs += now - last;
+      last = now;
+      if (introStore.failed || (!ready && visibleMs > 8000)) { clearInterval(id); collapse(); return; }
       setBoot((b) => (b < BOOT.length - 1 || ready ? Math.min(b + 1, BOOT.length) : b));
-      if (ready && performance.now() - started > 1200) { setBooted(true); clearInterval(id); }
+      if (ready && visibleMs > 1200) { setBooted(true); clearInterval(id); }
     }, 320);
     return () => clearInterval(id);
   }, [state]);

@@ -51,3 +51,22 @@ describe("sanitizeHistory", () => {
     expect(validateChat(spam)).toMatchObject({ ok: false, status: 429 });
   });
 });
+
+describe("sanitizeHistory: API shape", () => {
+  it("always starts with a user turn, even when the budget cuts mid-conversation", () => {
+    const long = (role: "user" | "assistant", n: number) => ({ role, parts: [{ type: "text", text: "x".repeat(n) }] });
+    const history = [long("user", 300), long("assistant", 1900), long("user", 300), long("assistant", 1900), long("user", 300), long("assistant", 1900), long("user", 300), long("assistant", 1900), long("user", 300), long("assistant", 1900), user("last")];
+    const out = sanitizeHistory(history);
+    expect(out[0].role).toBe("user");
+    expect(out.at(-1)!.parts[0].text).toBe("last");
+  });
+});
+
+describe("validateChat: malformed payloads", () => {
+  it("returns 400 (not a crash) for null entries or non-array parts", () => {
+    // @ts-expect-error deliberately malformed
+    expect(validateChat([null, user("hi")])).toMatchObject({ ok: false, status: 400 });
+    // @ts-expect-error deliberately malformed
+    expect(validateChat([{ role: "user", parts: "x" }])).toMatchObject({ ok: false, status: 400 });
+  });
+});

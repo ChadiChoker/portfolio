@@ -89,7 +89,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
     // 4096 max), so the screen stays crisp from on-the-desk all the way to filling the viewport.
     // Phones keep 2048 + trilinear mipmaps: there the display is drawn far smaller than the texture.
     const maxTex = renderer.capabilities.maxTextureSize;
-    const texW = Math.min(maxTex, 4096, Math.max(2048, Math.round(view.width * dpr / 256) * 256));
+    const texW = Math.min(maxTex, 3072, Math.max(2048, Math.round(view.width * dpr / 256) * 256)); // 3072 covers a 1512pt Retina MacBook; caps GPU memory on 5K displays
     rt = new THREE.WebGLRenderTarget(texW, Math.round(texW * 1328 / 2048), {
       colorSpace: THREE.SRGBColorSpace, samples: mobile ? 0 : 4,
       // Desktop: sample the full-resolution texture directly (mipmaps would drop to a half-res level

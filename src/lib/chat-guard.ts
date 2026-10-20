@@ -5,9 +5,11 @@ export type GuardMessage = { role: string; parts?: { type: string; text?: string
 export type GuardResult = { ok: true } | { ok: false; status: 400 | 429; error: string };
 
 const messageText = (m: Pick<GuardMessage, "parts">) =>
-  (m.parts ?? []).filter((p) => p.type === "text").map((p) => p.text ?? "").join("");
+  (Array.isArray(m.parts) ? m.parts : []).filter((p) => p?.type === "text").map((p) => p.text ?? "").join("");
+const wellFormed = (m: unknown): m is GuardMessage => !!m && typeof m === "object" && typeof (m as GuardMessage).role === "string";
 
 export function validateChat(messages: GuardMessage[]): GuardResult {
+  if (!messages.every(wellFormed)) return { ok: false, status: 400, error: "Bad request." };
   const last = messages.at(-1);
   if (!last || last.role !== "user") return { ok: false, status: 400, error: "Send a question to start." };
   const text = messageText(last).trim();
@@ -34,5 +36,6 @@ export function sanitizeHistory(messages: GuardMessage[]): CleanMessage[] {
     budget -= text.length;
     clean.unshift({ id: String(i), role: m.role, parts: [{ type: "text", text }] });
   }
+  while (clean.length && clean[0].role !== "user") clean.shift(); // the Messages API must start with a user turn
   return clean;
 }
