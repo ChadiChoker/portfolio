@@ -15,10 +15,10 @@
   --font-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Code", Consolas, monospace;
 }
 
-html { background: var(--color-bg); color: var(--color-fg); color-scheme: dark; scroll-behavior: smooth; }
+html { background: var(--color-bg); color: var(--color-fg); color-scheme: dark; }
 body { font-family: var(--font-sans); min-height: 100dvh; }
 ::selection { background: var(--color-accent); color: #000; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 .prose-chat { line-height: 1.6; }
 .prose-chat a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
