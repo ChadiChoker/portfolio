@@ -159,7 +159,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
     galaxy.update(dt, t);
 
     if (playing && rig && rt && hudScene && hudMat) {
-      drift.set(0, 0);
+      drift.multiplyScalar(1 - Math.min(1, dt * 1.5)); // ease the mouse drift out (scrolling back up) instead of snapping
       // lid hinge with seat lift, so the closed lid rests on the keys instead of sinking into them
       rig.pivot.rotation.x = rig.closedX + (rig.openX - rig.closedX) * pose.lidOpen;
       const th = rig.pivot.rotation.x;
@@ -188,7 +188,7 @@ export function createWorld(canvas: HTMLCanvasElement | OffscreenCanvas, opts: W
       camera.lookAt(look);
 
       hudMat.opacity = pose.hud;
-      spaceCam.position.set(Math.sin(t * 0.2) * 0.4, 2.6, 5.2); spaceCam.lookAt(origin);
+      spaceCam.position.set(Math.sin(t * 0.2) * 0.4 + drift.x * 0.6, 2.6 - drift.y * 0.3, 5.2); spaceCam.lookAt(origin); // same pose formula as the page background
       if (pose.power > 0) {
         // The display is a window onto the page's background galaxy: it renders the same camera, cropped
         // (setViewOffset) to a region of the viewport. On the desk that region is the whole frame at the
