@@ -26,6 +26,7 @@ Next.js 16 (App Router, Cache Components) · React 19 · TypeScript · Tailwind 
 | `src/agent/tools.ts` | Pure query functions over content. Used by the AI tools, the offline engine and the pages. |
 | `src/app/api/chat/route.ts` | Streaming agent: 5 read-only tools, `stopWhen: stepCountIs(4)`, `maxOutputTokens: 600` |
 | `src/lib/chat-guard.ts` | 12 messages and 500 characters per conversation, enforced on client and server |
+| `src/lib/rate-limit.ts` | Sliding-window limit on `/api/chat`: 20 questions per visitor and 300 per instance every 10 minutes, then a 429 with `Retry-After` |
 | `src/agent/scripted.ts` | Offline keyword engine, used when the API is unavailable |
 | `src/components/console/*` | `ConsoleLoader` renders a lightweight shell, and the live `AgentConsole` (AI SDK, markdown) loads on first interaction |
 | `src/three/choreography.ts` | Pure scroll → pose mapping for the intro (lid, turn, power, dive, hand-off) and the light curve for the intro → page transition. Unit-tested. |

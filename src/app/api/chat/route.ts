@@ -3,11 +3,20 @@ import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from 
 import { aiTools } from "@/agent/ai-tools";
 import { systemPrompt } from "@/agent/system-prompt";
 import { validateChat, sanitizeHistory } from "@/lib/chat-guard";
+import { createRateLimiter } from "@/lib/rate-limit";
 
 export const maxDuration = 30;
 
+// 20 questions per visitor per 10 minutes, 300 per instance per 10 minutes overall.
+const limiter = createRateLimiter({ perKey: 20, globalLimit: 300, windowMs: 10 * 60_000 });
+const visitor = (req: Request) =>
+  req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip") || "anonymous";
+
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) return Response.json({ error: "offline" }, { status: 503 });
+
+  const rate = limiter.check(visitor(req));
+  if (!rate.ok) return Response.json({ error: "Too many questions, try again shortly." }, { status: 429, headers: { "Retry-After": String(rate.retryAfterSec) } });
 
   let messages: UIMessage[];
   try {
