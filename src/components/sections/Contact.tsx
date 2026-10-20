@@ -1,5 +1,3 @@
-import { statSync } from "node:fs";
-import path from "node:path";
 import { profile } from "@/content/profile";
 import { Icons, SectionHeading } from "@/components/icons";
 
@@ -9,11 +7,6 @@ const links = [
   { label: "LinkedIn", value: "chadi-choker", href: profile.linkedin, accent: "accent-violet", icon: Icons.linkedin },
   { label: "GitHub", value: "ChadiChoker", href: profile.github, accent: "accent-fuchsia", icon: Icons.github },
 ];
-
-// Real file size, read at build time, so the label stays true if the CV is replaced.
-const cvSize = (() => {
-  try { return `${Math.round(statSync(path.join(process.cwd(), "public", profile.cv)).size / 1024)} KB`; } catch { return "PDF"; }
-})();
 
 export function Contact() {
   return (
@@ -33,7 +26,7 @@ export function Contact() {
         ))}
       </div>
       <a href={profile.cv} download className="cv-link mt-8 inline-flex items-center gap-2 pb-1 font-mono text-[15px] text-accent">
-        <span className="cv-link-arrow">{Icons.download}</span>Download CV <span className="text-xs text-muted">· PDF {cvSize}</span>
+        <span className="cv-link-arrow">{Icons.download}</span>Download CV
       </a>
     </section>
   );
